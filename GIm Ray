@@ -12,15 +12,29 @@
 ░█▄▄█ ──░█── 　 ░█──▀█ ▀▀▀ ▀▀▀ ▀▀▀ ░█▄▄▄█ ▀▀▀ ▀─▀▀ ▀▀▀ █▀▀▀ ──▀── ░█▄▄█ ▀──▀ ▀───▀ ▀▀▀ ▀▀▀
 
 --Ok Heres The Actual Script
+
+░█▀▀█ ▀█▀ ░█▀▄▀█ ░█▀▀▀█ ░█▄─░█ 　 
+░█─▄▄ ░█─ ░█░█░█ ░█──░█ ░█░█░█ 　 
+░█▄▄█ ▄█▄ ░█──░█ ░█▄▄▄█ ░█──▀█ 　 
+
+▀▀█▀▀ █──█ █▀▀ 　 ░█▀▀█ ░█▀▀▀ ▀▀█▀▀ ▀▀█▀▀ ░█▀▀▀ ░█▀▀█ 　 ░█─░█ ░█─░█ ░█▀▀█ 
+──█── █▀▀█ █▀▀ 　 ░█▀▀▄ ░█▀▀▀ ─░█── ─░█── ░█▀▀▀ ░█▄▄▀ 　 ░█▀▀█ ░█─░█ ░█▀▀▄ 
+──▀── ▀──▀ ▀▀▀ 　 ░█▄▄█ ░█▄▄▄ ─░█── ─░█── ░█▄▄▄ ░█─░█ 　 ░█─░█ ─▀▄▄▀ ░█▄▄█ 
+
+░█▀▀█ ░█──░█ 　 ░█▄─░█ ─▀─ █▀▀ █▀▀ ░█▀▀▀█ █▀▀ █▀▀█ ─▀─ █▀▀█ ▀▀█▀▀ ░█▀▀█ █▀▀█ █▀▄▀█ █▀▀ █▀▀ -- Join the Discord
+░█▀▀▄ ░█▄▄▄█ 　 ░█░█░█ ▀█▀ █── █▀▀ ─▀▀▀▄▄ █── █▄▄▀ ▀█▀ █──█ ──█── ░█─▄▄ █▄▄█ █─▀─█ █▀▀ ▀▀█ 
+░█▄▄█ ──░█── 　 ░█──▀█ ▀▀▀ ▀▀▀ ▀▀▀ ░█▄▄▄█ ▀▀▀ ▀─▀▀ ▀▀▀ █▀▀▀ ──▀── ░█▄▄█ ▀──▀ ▀───▀ ▀▀▀ ▀▀▀
+
+--Ok Heres The Actual Script
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
 
 local Window = Rayfield:CreateWindow({
     Name = "Welcome To Gimon ",
-    LoadingTitle = "Booting Up With Gimon",
+    LoadingTitle = "An All in One Script Hub For Doors",
     LoadingSubtitle = "by Nice Script games",
     ConfigurationSaving = {
        Enabled = true,
-       FolderName = Gimon, -- Create a custom folder for your hub/game
+       FolderName = Gimon, 
        FileName = "Gim Hub"
     },
     Discord = {
@@ -28,7 +42,7 @@ local Window = Rayfield:CreateWindow({
        Invite = "GIMON", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ABCD would be ABCD.
        RememberJoins = true -- Set this to false to make them join the discord every time they load it up
     },
-    KeySystem = true, -- Set this to true to use our key system
+    KeySystem = true,
     KeySettings = {
        Title = "Gimon Hub",
        Subtitle = "Gimons Key System",
@@ -64,6 +78,39 @@ local Window = Rayfield:CreateWindow({
  local Button = Main:CreateButton({
     Name = "Vynixius Loader",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Vynixius/main/Doors/Script.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Vynixius/main/Doors/Script.lua"))();
+    end,
+ })
+ 
+ --OTHER
+ local Other = Window:CreateTab("PoopDoors(AUTO A-1000 AND MORE)", 4483362458)
+ local OtherSection = Tab:CreateSection("PoopDoors")
+
+ local Button = Other:CreateButton({
+    Name = "Load PoopDoors",
+    Callback = function()
+        loadstring(game:HttpGet(("https://raw.githubusercontent.com/mstudio45/poopdoors_edited/main/poopdoors_edited.lua")),true)();
+    end,
+ })
+
+ local Button = Other:CreateButton({
+    Name = "Entity Spawner",
+    Callback = function()
+       loadstring(game:HttpGet('https://pastebin.com/raw/XLix2m6L'))true,();
+    end,
+ })
+
+ local Button = Other:CreateButton({
+    Name = "Doors Morph Script",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ChronoAccelerator/Public-Scripts/main/Morphing/MorphScript.lua")true,)();
+    end,
+ })
+
+
+ local Button = Other:CreateButton({
+    Name = "DumbASS simple Script",
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/zoophiliaphobic/POOPDOORS/main/script.lua'))true,();
     end,
  })

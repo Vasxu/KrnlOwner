@@ -1,0 +1,95 @@
+-- Achievement
+local Achievements = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Custom%20Achievements/Source.lua"))()
+-- Creates and displays your custom achievement
+Achievements.Get({
+    Title = "This is just the beginning",
+    Desc = "...",
+    Reason = 'Executed Star Mode In Game',
+    Image = "https://qph.cf2.quoracdn.net/main-qimg-74971626a636d78097db14b505f32b6a-pjlq",
+})
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/slf0Dev/Ocerium_Project/main/Library.lua"))()
+Window = Library.Main("[BETA] Star Mode","LeftAlt") -- change "LeftAlt" to key that you want will hide gui
+--//tab
+    local Tab = Window.NewTab("Script hub")
+    local Section = Tab.NewSection("Scripts")
+    local Button = Section.NewButton("Admin Commands",function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+    end)
+
+    --// Button
+    local Button = Section.NewButton("Vynixius",function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Vynixius/main/Doors/Loader.lua"))()
+end)
+
+--// Button
+    local Button = Section.NewButton("PoopDoorsEdited --OUTDATED",function()
+    loadstring(game:HttpGet(("https://raw.githubusercontent.com/mstudio45/poopdoors_edited/main/poopdoors_edited.lua"),true))()
+    end)
+
+    local Section = Tab.NewSection("Entity Spawn Scripts And More")
+    local Button = Section.NewButton("plamen6789UtilitiesHub",function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/plamen6789/UtilitiesHub/main/UtilitiesGUI'))()
+        end)
+
+     --// Button
+    local Button = Section.NewButton("Scanner giver/tablet",function()
+    _G.UpdateStars = false -- stars disappear after picking up a book/breaker pole | false: a little lag
+    _G.OnShop = true -- can buy on pre run shop
+    _G.Price = 0 -- tablet price on shop
+    _G.Description = "The Most Rarest Item to get." 
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/DeividComSono/Scripts/main/Scanner.lua'))()
+    end)
+    --// Button
+     local Button = Section.NewButton("inf Revive Script",function()
+        game.ReplecatedStorage.EntityInfo.Revive.FireServer()
+    end)
+    
+    --// Secton
+    local Section = Tab.NewSection("Rooms")
+
+    --// Button
+    local Button = Section.NewButton("Rooms Auto Walk",function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/DaRealGeo/roblox/master/rooms-autowalk"))()
+    end)
+---ESP
+local Tab = Window.NewTab("Visuals")
+local Section = Tab.NewSection("Entitys")
+          
+
+    --// Button
+    local Button = Section.NewButton("A90 Spawner",function()
+        local a = require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules["A90"])(require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game))()
+    end)
+ ---OTHERS
+ local Tab = Window.NewTab("Others")
+ local Section = Tab.NewSection("Others")
+ --// Button 
+local Button = Section.NewButton("Gimon Hub",function()
+    loadstring(Game:Httpget("https://pastebin.com/raw/kZM3cEXP"))()
+    end)
+------------DONT ADD
+local Tab = Window.NewTab("Lobby Stuff")
+local Section = Tab.NewSection("Badges")
+--//Toggles
+local EnabledToggle = Section.NewToggle("Interconnected Badge",function(bool)
+local args = {
+    [1] = ""
+}
+game:GetService("ReplicatedStorage").EntityInfo.FlexAchievement:FireServer(unpack(args))
+
+    end,true) -- "true" is the default value of toggle
+    
+ local DisabledToggle = Section.NewToggle("A-1000 Badge",function(bool)
+local args = {
+    [1] = "EscapeRooms1000"
+}
+game:GetService("ReplicatedStorage").EntityInfo.FlexAchievement:FireServer(unpack(args))
+    end,false) -- "false" is the default value of toggle
+
+local Tab = Window.NewTab("When Dead")
+local Section = Tab.NewSection("Auto Stuff")
+local Button = Section.NewButton("Play Again",function()
+    game:GetService("ReplicatedStorage").EntityInfo.PlayAgain:FireServer()
+    end)
+

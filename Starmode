@@ -31,15 +31,6 @@ end)
     local Button = Section.NewButton("plamen6789UtilitiesHub",function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/plamen6789/UtilitiesHub/main/UtilitiesGUI'))()
         end)
-
-     --// Button
-    local Button = Section.NewButton("Scanner giver/tablet",function()
-    _G.UpdateStars = false -- stars disappear after picking up a book/breaker pole | false: a little lag
-    _G.OnShop = true -- can buy on pre run shop
-    _G.Price = 0 -- tablet price on shop
-    _G.Description = "The Most Rarest Item to get." 
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/DeividComSono/Scripts/main/Scanner.lua'))()
-    end)
     --// Button
      local Button = Section.NewButton("inf Revive Script",function()
         game.ReplecatedStorage.EntityInfo.Revive.FireServer()
@@ -52,29 +43,24 @@ end)
     local Button = Section.NewButton("Rooms Auto Walk",function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/DaRealGeo/roblox/master/rooms-autowalk"))()
     end)
----ESP
-local Tab = Window.NewTab("Visuals")
-local Section = Tab.NewSection("Entitys")
-          
 
-    --// Button
-    local Button = Section.NewButton("A90 Spawner",function()
-        local a = require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules["A90"])(require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game))()
+
+--------------STOP
+--//tab
+local Tab = Window.NewTab("Trolling")
+local Section = Tab.NewSection("Elevator Trolls")
+--// Button
+local Button = Section.NewButton("leave ----1 Click",function()
+    -- code here
     end)
- ---OTHERS
- local Tab = Window.NewTab("Others")
- local Section = Tab.NewSection("Others")
- --// Button 
-local Button = Section.NewButton("Gimon Hub",function()
-    loadstring(Game:Httpget("https://pastebin.com/raw/kZM3cEXP"))()
-    end)
-------------DONT ADD
-local Tab = Window.NewTab("Lobby Stuff")
-local Section = Tab.NewSection("Badges")
+    
+-----DONT ADD
+local Tab = Window.NewTab("Vid Hub")
+local Section = Tab.NewSection("BadgesForVideos")
 --//Toggles
 local EnabledToggle = Section.NewToggle("Interconnected Badge",function(bool)
 local args = {
-    [1] = ""
+    [1] = "UseRift"
 }
 game:GetService("ReplicatedStorage").EntityInfo.FlexAchievement:FireServer(unpack(args))
 
@@ -85,11 +71,27 @@ local args = {
     [1] = "EscapeRooms1000"
 }
 game:GetService("ReplicatedStorage").EntityInfo.FlexAchievement:FireServer(unpack(args))
-    end,false) -- "false" is the default value of toggle
+    end,false) 
 
-local Tab = Window.NewTab("When Dead")
-local Section = Tab.NewSection("Auto Stuff")
-local Button = Section.NewButton("Play Again",function()
-    game:GetService("ReplicatedStorage").EntityInfo.PlayAgain:FireServer()
+    --//section
+local Section = Tab.NewSection("ScriptsInVideosSOON")
+--// Button
+local Button = Section.NewButton("Scanner",function()
+    _G.UpdateStars = false -- stars disappear after picking up a book/breaker pole | false: a little lag
+    _G.OnShop = true -- can buy on pre run shop
+    _G.Price = 0 -- tablet price on shop
+    _G.Description = "The Most Rarest Item to get." 
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/DeividComSono/Scripts/main/Scanner.lua'))()
     end)
-
+    
+    
+-------------OTHERS TAB
+local Tab = Window.NewTab("1 Click Remotes")
+local Section = Tab.NewSection("Items")
+--// Button
+local Button = Section.NewButton("Vitamins REQUIRES ATLEAST 3",function()
+    game:GetService("Players").LocalPlayer.Character.Vitamins.Remote:FireServer()
+    end)
+local Button = Section.NewButton("lighter",function()
+    game:GetService("Players").LocalPlayer.Character.Lighter.Remote:FireServer()
+    end)

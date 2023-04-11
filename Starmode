@@ -1,6 +1,4 @@
--- Achievement
 local Achievements = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Custom%20Achievements/Source.lua"))()
--- Creates and displays your custom achievement
 Achievements.Get({
     Title = "This is just the beginning",
     Desc = "...",
@@ -13,10 +11,6 @@ Window = Library.Main("[BETA] Star Mode","LeftAlt") -- change "LeftAlt" to key t
 --//tab
     local Tab = Window.NewTab("Script hub")
     local Section = Tab.NewSection("Scripts")
-    local Button = Section.NewButton("Admin Commands",function()
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-    end)
-
     --// Button
     local Button = Section.NewButton("Vynixius",function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Vynixius/main/Doors/Loader.lua"))()
@@ -27,15 +21,18 @@ end)
     loadstring(game:HttpGet(("https://raw.githubusercontent.com/mstudio45/poopdoors_edited/main/poopdoors_edited.lua"),true))()
     end)
 
-    local Section = Tab.NewSection("Entity Spawn Scripts And More")
+    local Section = Tab.NewSection("Entity Spawner Scripts And More")
     local Button = Section.NewButton("plamen6789UtilitiesHub",function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/plamen6789/UtilitiesHub/main/UtilitiesGUI'))()
         end)
     --// Button
      local Button = Section.NewButton("inf Revive Script",function()
-        game.ReplecatedStorage.EntityInfo.Revive.FireServer()
+        game.ReplicatedStorage.EntityInfo.Revive.FireServer()
     end)
-    
+
+    local Button = Section.NewButton("Admin Commands",function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+        end)
     --// Secton
     local Section = Tab.NewSection("Rooms")
 
@@ -50,28 +47,29 @@ end)
 local Tab = Window.NewTab("Trolling")
 local Section = Tab.NewSection("Elevator Trolls")
 --// Button
-local Button = Section.NewButton("leave ----1 Click",function()
-    -- code here
+local Button = Section.NewButton("leave Elevator",function()
+    print("Left!")
+    game:GetService("ReplicatedStorage"):WaitForChild("EntityInfo"):WaitForChild("LobbyElevatorExit"):FireServer()
     end)
     
 -----DONT ADD
-local Tab = Window.NewTab("Vid Hub")
-local Section = Tab.NewSection("BadgesForVideos")
+local Tab = Window.NewTab("Badges And More")
+local Section = Tab.NewSection("Badges")
 --//Toggles
-local EnabledToggle = Section.NewToggle("Interconnected Badge",function(bool)
-local args = {
-    [1] = "UseRift"
-}
-game:GetService("ReplicatedStorage").EntityInfo.FlexAchievement:FireServer(unpack(args))
-
-    end,true) -- "true" is the default value of toggle
-    
- local DisabledToggle = Section.NewToggle("A-1000 Badge",function(bool)
-local args = {
-    [1] = "EscapeRooms1000"
-}
-game:GetService("ReplicatedStorage").EntityInfo.FlexAchievement:FireServer(unpack(args))
-    end,false) 
+local Button = Section.NewButton("Interconnected",function()
+    print("Badge eqquiped!")
+    local args = {
+        [1] = "UseRift"
+    }
+    game:GetService("ReplicatedStorage").EntityInfo.FlexAchievement:FireServer(unpack(args))
+    end)
+    local Button = Section.NewButton("A-1000",function()
+        print("Badge eqquiped!")
+    local args = {
+        [1] = "EscapeRooms1000"
+    }
+    game:GetService("ReplicatedStorage").EntityInfo.FlexAchievement:FireServer(unpack(args))
+end)
 
     --//section
 local Section = Tab.NewSection("ScriptsInVideosSOON")
@@ -89,9 +87,9 @@ local Button = Section.NewButton("Scanner",function()
 local Tab = Window.NewTab("1 Click Remotes")
 local Section = Tab.NewSection("Items")
 --// Button
-local Button = Section.NewButton("Vitamins REQUIRES ATLEAST 3",function()
+local Button = Section.NewButton("Vitamins|Requires atleast 1 ",function()
     game:GetService("Players").LocalPlayer.Character.Vitamins.Remote:FireServer()
-    end)
-local Button = Section.NewButton("lighter",function()
+end)
+local Button = Section.NewButton("lighter|Same with Vitamins",function()
     game:GetService("Players").LocalPlayer.Character.Lighter.Remote:FireServer()
-    end)
+end)

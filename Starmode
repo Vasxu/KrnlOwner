@@ -93,3 +93,21 @@ end)
 local Button = Section.NewButton("lighter|Same with Vitamins",function()
     game:GetService("Players").LocalPlayer.Character.Lighter.Remote:FireServer()
 end)
+
+
+--//tab
+local Tab = Window.NewTab("Challenges")
+--//section
+local Section = Tab.NewSection("Unable to join elevators")
+
+--// Button
+local Button = Section.NewButton("Try it | WARNING 1 TIME USE FOR EACH SERVER",function()
+     print('Executed!')
+     game:GetService("ReplicatedStorage"):WaitForChild("EntityInfo"):WaitForChild("LobbyElevatorExit"):FireServer()
+     wait(0)
+    end)
+
+    local Button = Section.NewButton("A video of it",function()
+        print('Executed!')
+        loadstring(Game:Httpget("https://discord.com/channels/1091477735316144258/1095404029036732448"))()
+       end)

@@ -71,18 +71,7 @@ local Button = Section.NewButton("Interconnected",function()
     game:GetService("ReplicatedStorage").EntityInfo.FlexAchievement:FireServer(unpack(args))
 end)
 
-    --//section
-local Section = Tab.NewSection("ScriptsInVideosSOON")
---// Button
-local Button = Section.NewButton("Scanner",function()
-    _G.UpdateStars = false -- stars disappear after picking up a book/breaker pole | false: a little lag
-    _G.OnShop = true -- can buy on pre run shop
-    _G.Price = 0 -- tablet price on shop
-    _G.Description = "The Most Rarest Item to get." 
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/DeividComSono/Scripts/main/Scanner.lua'))()
-    end)
-    
-    
+
 -------------OTHERS TAB
 local Tab = Window.NewTab("1 Click Remotes")
 local Section = Tab.NewSection("Items")

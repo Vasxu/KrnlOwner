@@ -1,0 +1,85 @@
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Custom Gui", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
+OrionLib:MakeNotification({
+	Name = "Welcome?",
+	Content = "Yes",
+	Image = "rbxassetid://6035202097",
+	Time = 5
+})
+
+--[[
+Title = <string> - The title of the notification.
+Content = <string> - The content of the notification.
+Image = <string> - The icon of the notification.
+Time = <number> - The duration of the notfication.
+]]
+local Tab = Window:MakeTab({
+	Name = "Custom item scripts",
+	Icon = "rbxassetid://6035202076",
+	PremiumOnly = false
+})
+
+local Section = Tab:AddSection({
+	Name = "idk what to put"
+})
+
+Tab:AddButton({
+	Name = "Maxwell Plush",
+	Callback = function()
+      		print("Maxwell Equippped Meow!")
+			  loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Maxwell%20Plushie"))()
+  	end    
+})
+
+Tab:AddButton({
+	Name = "Gummy Gummy Flashlight!",
+	Callback = function()
+      		print("Oh im a gummy Flash!")
+			  loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Gummy%20Flashlight%20Script"))()
+  	end    
+})
+
+Tab:AddButton({
+	Name = "Purple FlashLight",
+	Callback = function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Purple%20Flashlight"))()
+  	end    
+})
+
+local Tab = Window:MakeTab({
+	Name = "Guns And more",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Section = Tab:AddSection({
+	Name = "laser gun real!1"
+})
+
+Tab:AddButton({
+	Name = "Equip",
+	Callback = function()
+      		print("pew pew")
+			  loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Laser%20Gun"))()
+  	end    
+})
+
+Tab:AddButton({
+	Name = "Banna Gun",
+	Callback = function()
+		getgenv().BananaGunSettings = {
+			BananaSpeed = 100,
+			BananaAmount = 5
+		}
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/MasterOogway6147/Scripts/main/Doors/Kardin%20Hong/Banana%20Gun/Banana%20Gun.lua"))()
+  	end    
+})
+
+Tab:AddButton({
+	Name = "Jeff Plushie",
+	Callback = function()
+		local tool = game:GetObjects("rbxassetid://13069619857")[1]
+		tool.Parent = game.Players.LocalPlayer.Backpack
+  	end    
+})
+

@@ -1,85 +1,145 @@
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
-local Window = OrionLib:MakeWindow({Name = "Custom Gui", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
-OrionLib:MakeNotification({
-	Name = "Welcome?",
-	Content = "Yes",
-	Image = "rbxassetid://6035202097",
-	Time = 5
-})
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Achievement
+local Achievements = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Custom%20Achievements/Source.lua"))()
 
---[[
-Title = <string> - The title of the notification.
-Content = <string> - The content of the notification.
-Image = <string> - The icon of the notification.
-Time = <number> - The duration of the notfication.
-]]
-local Tab = Window:MakeTab({
-	Name = "Custom item scripts",
-	Icon = "rbxassetid://6035202076",
-	PremiumOnly = false
+-- Creates and displays your custom achievement
+Achievements.Get({
+    Title = "Hey wait how did you get here?",
+    Desc = "Buying starmode tons of times",
+    Reason = 'You are the G.O.A.T No question about it',
+    Image = "Https://data:image/png;base64,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",
 })
+local Inviter = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Discord%20Inviter/Source.lua"))()
 
-local Section = Tab:AddSection({
-	Name = "idk what to put"
+-- Creates an interactable prompt
+Inviter.Prompt({
+    name = "Starmode",
+    invite = "https://discord.gg/k95b4BuqYE",
 })
+local Window = Rayfield:CreateWindow({
+	Name = "Custom UI",
+	LoadingTitle = "DOORS",
+	LoadingSubtitle = "by starclone okayy and zun",
+	ConfigurationSaving = {
+	   Enabled = true,
+	   FolderName = nil, -- Create a custom folder for your hub/game
+	   FileName = "Big hub"
+	},
+	Discord = {
+	   Enabled = false,
+	   Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ABCD would be ABCD
+	   RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+	},
+	KeySystem = false, -- Set this to true to use our key system
+	KeySettings = {
+	   Title = "Untitled",
+	   Subtitle = "Key System",
+	   Note = "No method of obtaining the key is provided",
+	   FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+	   SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+	   GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+	   Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+	}
+ })
 
-Tab:AddButton({
-	Name = "Maxwell Plush",
+ 
+
+ Rayfield:Notify({
+	Title = "Welcome Clone!",
+	Content = "The script, made just for you.",
+	Duration = 1.0,
+	Image = 4483362458,
+	Actions = { -- Notification Buttons
+	   Ignore = {
+		  Name = "Okay uh just take me there",
+		  Callback = function()
+			print("Extra sussy")
+	   end
+	},
+ },
+ })
+ local Tab = Window:CreateTab("Custom Item Scripts", 4483362458) -- Title, Image
+ local Section = Tab:CreateSection("Holdables")
+ local Button = Tab:CreateButton({
+	Name = "Maxwell",
 	Callback = function()
-      		print("Maxwell Equippped Meow!")
-			  loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Maxwell%20Plushie"))()
-  	end    
-})
-
-Tab:AddButton({
-	Name = "Gummy Gummy Flashlight!",
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Maxwell%20Plushie"))()
+	end,
+ })
+ local Button = Tab:CreateButton({
+	Name = "Dread Plushie ",
 	Callback = function()
-      		print("Oh im a gummy Flash!")
-			  loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Gummy%20Flashlight%20Script"))()
-  	end    
-})
-
-Tab:AddButton({
-	Name = "Purple FlashLight",
+		local dread=game:GetObjects("rbxassetid://13071801863")[1];dread.Parent=game.Players.LocalPlayer.Backpack
+	end,
+ })
+ local Section = Tab:CreateSection("Guns")
+ local Button = Tab:CreateButton({
+	Name = "Laser gun",
 	Callback = function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Purple%20Flashlight"))()
-  	end    
-})
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Laser%20Gun"))()
+	end,
+ })
 
-local Tab = Window:MakeTab({
-	Name = "Guns And more",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
-})
-
-local Section = Tab:AddSection({
-	Name = "laser gun real!1"
-})
-
-Tab:AddButton({
-	Name = "Equip",
-	Callback = function()
-      		print("pew pew")
-			  loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Laser%20Gun"))()
-  	end    
-})
-
-Tab:AddButton({
-	Name = "Banna Gun",
+ local Button = Tab:CreateButton({
+	Name = "Banana Gun",
 	Callback = function()
 		getgenv().BananaGunSettings = {
 			BananaSpeed = 100,
-			BananaAmount = 5
+			BananaAmount = 1
 		}
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/MasterOogway6147/Scripts/main/Doors/Kardin%20Hong/Banana%20Gun/Banana%20Gun.lua"))()
-  	end    
-})
-
-Tab:AddButton({
-	Name = "Jeff Plushie",
+	end,
+ })
+ local Section = Tab:CreateSection("Hard mode Plushie")
+ local Button = Tab:CreateButton({
+	Name = "Jeff Plush",
 	Callback = function()
 		local tool = game:GetObjects("rbxassetid://13069619857")[1]
 		tool.Parent = game.Players.LocalPlayer.Backpack
-  	end    
-})
+	end,
+ })
 
+ local Tab = Window:CreateTab("Built in Script Hub Network", 4483362458) -- Title, Image
+ local Section = Tab:CreateSection("Free Scripts")
+
+ local Button = Tab:CreateButton({
+	Name = "Vynixius",
+	Callback = function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Vynixius/main/Doors/Loader.lua"))()
+	end,
+ })
+
+ local Button = Tab:CreateButton({
+	Name = "plamen6789UtilitiesHub",
+	Callback = function()
+		loadstring(game:HttpGet('https://raw.githubusercontent.com/plamen6789/UtilitiesHub/main/UtilitiesGUI'))()
+	end,
+ })
+
+ local Button = Tab:CreateButton({
+	Name = "inf Revive Script",
+	Callback = function()
+		game.ReplicatedStorage.EntityInfo.Revive.FireServer()
+	end,
+ })
+
+ local Button = Tab:CreateButton({
+	Name = "Admin Commands",
+	Callback = function()
+		loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+	end,
+ })
+
+ local Section = Tab:CreateSection("Paid Scripts")
+ local Button = Tab:CreateButton({
+	Name = "Starmode",
+	Callback = function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/StarsDoors/Stars-Hub/main/Doors%20Scripts",true))();
+	end,
+ })
+ local Button = Tab:CreateButton({
+	Name = "Button Example",
+	Callback = function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/StarsDoors/Doors-Anticheat-Bypass/main/doorsbypass",true))();
+	end,
+ })

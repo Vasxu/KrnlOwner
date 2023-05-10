@@ -1,0 +1,302 @@
+-- New example script written by wally
+-- You can suggest changes with a pull request or something
+
+local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
+
+local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
+local ThemeManager = loadstring(game:HttpGet(repo .. 'addons/ThemeManager.lua'))()
+local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
+
+local Window = Library:CreateWindow({
+    -- Set Center to true if you want the menu to appear in the center
+    -- Set AutoShow to true if you want the menu to appear when it is created
+    -- Position and Size are also valid options here
+    -- but you do not need to define them unless you are changing them :)
+
+    Title = 'Trollhax',
+    Center = true,
+    AutoShow = true,
+    TabPadding = 8,
+    MenuFadeTime = 0.2
+})
+
+-- CALLBACK NOTE:
+-- Passing in callback functions via the initial element parameters (i.e. Callback = function(Value)...) works
+-- HOWEVER, using Toggles/Options.INDEX:OnChanged(function(Value) ... ) is the RECOMMENDED way to do this.
+-- I strongly recommend decoupling UI code from logic code. i.e. Create your UI elements FIRST, and THEN setup :OnChanged functions later.
+
+-- You do not have to set your tabs & groups up this way, just a prefrence.
+local Tabs = {
+    Main = Window:AddTab('Main'),
+    ['UI Settings'] = Window:AddTab('UI Settings'),
+}
+
+-- Groupbox and Tabbox inherit the same functions
+-- except Tabboxes you have to call the functions on a tab (Tabbox:AddTab(name))
+
+
+-- We can also get our Main tab via the following code:
+-- local LeftGroupBox = Window.Tabs.Main:AddLeftGroupbox('Groupbox')
+
+-- Tabboxes are a tiny bit different, but here's a basic example:
+--[[
+local TabBox = Tabs.Main:AddLeftTabbox() -- Add Tabbox on left side
+local Tab1 = TabBox:AddTab('Tab 1')
+local Tab2 = TabBox:AddTab('Tab 2')
+-- You can now call AddToggle, etc on the tabs you added to the Tabbox
+]]
+
+-- Groupbox:AddToggle
+-- Arguments: Index, Options
+--LEFT
+local LeftGroupBox = Tabs.Main:AddLeftGroupbox('Exploits')
+LeftGroupBox:AddLabel('These scripts might not work.')
+LeftGroupBox:AddToggle('MyToggle', {
+    Text = 'Activate Lighter',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'Activates your lighter, But you have to have one equipped', -- Information shown when you hover over the toggle
+    Callback = function(Value)
+     game:GetService("Players").LocalPlayer.Character.Lighter.Remote:FireServer()
+    end
+})
+
+LeftGroupBox:AddToggle('MyToggle', {
+    Text = 'Inf Revive',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'Allows you to use a revive, even if it says you cant.', -- Information shown when you hover over the toggle
+
+    Callback = function(Value)
+        game.ReplicatedStorage.EntityInfo.Revive.FireServer()
+    end
+})
+
+LeftGroupBox:AddToggle('MyToggle', {
+    Text = 'Inf Revive',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'Allows you to use a revive, even if it says you cant.', -- Information shown when you hover over the toggle
+    Callback = function(Value)
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/persopoiu/scripts/main/bananclicktpfools.lua'))()
+    end
+})
+
+MyButton = LeftGroupBox:AddButton({
+    Text = 'Holdable Maxwell',
+    Func = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Maxwell%20Plushie"))() 
+    end,
+    DoubleClick = false,
+    Tooltip = 'Allows you to hold maxwell'
+})
+
+
+MyButton = LeftGroupBox:AddButton({
+    Text = 'Crucifix in door 0',
+    Func = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Crucifix%20On%20Door%200"))()
+    end,
+    DoubleClick = false,
+    Tooltip = 'this script uses the crucifix on anything.'
+})
+
+MyButton2 = LeftGroupBox:AddButton({
+    Text = 'Godly Hand',
+    Func = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/K0t1n/Public/main/Godly%20Hand"))()
+    end,
+    DoubleClick = false, -- You will have to click this button twice to trigger the callback
+    Tooltip = 'Makes your hand godly/powerful'
+})
+
+RightGroupBox = Tabs.Main:AddRightGroupbox('Player')
+RightGroupBox:AddToggle('MyToggle', {
+    Text = 'No Acceleration',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'Blocks Acceleration.', -- Information shown when you hover over the toggle
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CustomPhysicalProperties = PhysicalProperties.new(100,0,0,0,0)
+    end
+})
+
+
+RightGroupBox:AddToggle('MyToggle', {
+    Text = 'Door reach',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'Farther reach for doors', -- Information shown when you hover over the toggle
+    Callback = function(Value)
+        function doorreach()
+         local door = game:GetService("ReplicatedStorage").GameData.LatestRoom.Value
+         workspace.CurrentRooms:FindFirstChild(door).Door.ClientOpen:FireServer()
+         wait(0.08)
+         doorreach()
+         end
+         doorreach()
+    end
+})
+
+RightGroupBox:AddToggle('MyToggle', {
+    Text = 'No seek arms/Chandlers',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'Disables Seeks Arms.', -- Information shown when you hover over the toggle
+    Callback = function(Value)
+        game:GetService("ReplicatedStorage").GameData.LatestRoom:GetPropertyChangedSignal("Value"):Connect(function()
+            task.wait(.1)
+            for _,descendant in pairs(game:GetService("Workspace").CurrentRooms:GetDescendants()) do
+                if descendant.Name == "Seek_Arm" or descendant.Name == "ChandelierObstruction" then
+                    descendant.Parent = nil
+                    descendant:Destroy()
+                end
+            end
+        end)
+    end
+})
+
+RightGroupBox:AddSlider('MySlider', {
+    Text = 'FOV Changer.',
+    Default = 70,
+    Min = 50,
+    Max = 120,
+    Rounding = 1,
+    Compact = false,
+    Callback = function(Value)
+	game:GetService("Workspace").CurrentCamera.FieldOfView = Value
+    end
+})
+
+RightGroupBox:AddSlider('MySlider', {
+    Text = 'Speedboost',
+    Default = 5,
+    Min = 10,
+    Max = 35,
+    Rounding = 1,
+    Compact = false,
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid:SetAttribute("SpeedBoost", 5)
+    end
+})
+
+--OTHER
+MyButton = RightGroupBox:AddButton({
+    Text = 'Skip room 50',
+    Func = function()
+        if LatestRoom.Value == 50 then
+            local CurrentDoor = workspace.CurrentRooms[tostring(LatestRoom.Value + 1)]:WaitForChild("Door")
+            game.Players.LocalPlayer.Character:PivotTo(CFrame.new(CurrentDoor.Door.Position))
+        end
+    end,
+    DoubleClick = false,
+    Tooltip = 'This button skips room 50,'
+})
+
+
+--DISABLED
+LeftGroupBox = Tabs.Main:AddLeftGroupbox('Helpers')
+LeftGroupBox:AddToggle('MyToggle', {
+    Text = 'Rush Notifier',
+    Default = true, -- Default value (true / false)
+    Tooltip = 'This Toggle Notifys you if Rush is coming.', -- Information shown when you hover over the toggle
+
+    Callback = function(Value)
+        workspace.ChildAdded:Connect(function(Obj)
+            if Obj.Name:sub(1, 1) == "A" and Obj.Name ~= "RushMoving" then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = Obj.Name .. " Spawned ⚠️",
+                    Text = "Hide quick",
+                    Duration = 5
+                })
+            end
+        end)
+        workspace.ChildRemoved:Connect(function(Obj)
+            if Obj.Name:sub(1, 1) == "A" and Obj.Name ~= "RushMoving" then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = Obj.Name .. " DeSpawned ✅",
+                    Text = "Your alright",
+                    Duration = 5
+                })
+            end
+        end)
+    end,
+})
+
+LeftGroupBox:AddToggle('MyToggle', {
+    Text = 'Ambush Notifier',
+    Default = true, -- Default value (true / false)
+    Tooltip = 'This Toggle Notifys you if Ambush is coming.', -- Information shown when you hover over the toggle
+
+    Callback = function(Value)
+        workspace.ChildAdded:Connect(function(Obj)
+            if Obj.Name:sub(1, 1) == "A" and Obj.Name ~= "AmbushMoving" then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = Obj.Name .. " Spawned ⚠️",
+                    Text = "Hide quick",
+                    Duration = 5
+                })
+            end
+        end)
+        workspace.ChildRemoved:Connect(function(Obj)
+            if Obj.Name:sub(1, 1) == "A" and Obj.Name ~= "AmbushMoving" then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = Obj.Name .. " DeSpawned ✅",
+                    Text = "Your alright",
+                    Duration = 5
+                })
+            end
+        end)
+    end,
+})
+
+LeftGroupBox:AddToggle('MyToggle', {
+    Text = 'A-90 Damage Disabler',
+    Default = true, -- Default value (true / false)
+    Tooltip = 'Disables A-90 Damage, Literally.', -- Information shown when you hover over the toggle
+
+    Callback = function(Value)
+        local mt = getrawmetatable(game)
+        local old = mt.__namecall
+        setreadonly(mt,false)
+        mt.__namecall = newcclosure(function(self, ...)
+          local args = {...}
+          if getnamecallmethod() == 'FireServer' and self.Name == 'A90' then
+            args[1] = false
+          end
+          return old(self, unpack(args))
+        end) 
+    end
+})
+
+--UI 
+MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('Configs')
+MenuGroup:AddButton('Unload', function() Library:Unload() end)
+MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', { Default = 'RightShift', NoUI = true, Text = 'Menu keybind' })
+Library.ToggleKeybind = Options.MenuKeybind 
+-- Addons:
+-- SaveManager (Allows you to have a configuration system)
+-- ThemeManager (Allows you to have a menu theme system)
+
+-- Hand the library over to our managers
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+
+-- Ignore keys that are used by ThemeManager.
+-- (we dont want configs to save themes, do we?)
+SaveManager:IgnoreThemeSettings()
+
+-- Adds our MenuKeybind to the ignore list
+-- (do you want each config to have a different menu key? probably not.)
+SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
+
+-- use case for doing it this way:
+-- a script hub could have themes in a global folder
+-- and game configs in a separate folder per game
+ThemeManager:SetFolder('MyScriptHub')
+SaveManager:SetFolder('MyScriptHub/specific-game')
+
+-- Builds our config menu on the right side of our tab
+SaveManager:BuildConfigSection(Tabs['UI Settings'])
+
+-- Builds our theme menu (with plenty of built in themes) on the left side
+-- NOTE: you can also call ThemeManager:ApplyToGroupbox to add it to a specific groupbox
+ThemeManager:ApplyToTab(Tabs['UI Settings'])
+
+-- You can use the SaveManager:LoadAutoloadConfig() to load a config
+-- which has been marked to be one that auto loads!
+SaveManager:LoadAutoloadConfig()

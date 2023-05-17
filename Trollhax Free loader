@@ -1,0 +1,414 @@
+
+local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
+local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
+local ThemeManager = loadstring(game:HttpGet(repo .. 'addons/ThemeManager.lua'))()
+local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
+local Window = Library:CreateWindow({
+    Title = 'Trollhax',
+    Center = true,
+    AutoShow = true,
+    TabPadding = 8,
+    MenuFadeTime = 0.2
+})
+
+local Tabs = {
+    Main = Window:AddTab('Main'),
+    ['UI Settings'] = Window:AddTab('UI Settings'),
+}
+
+local LeftGroupBox = Tabs.Main:AddLeftGroupbox('visuals/Exploits/Holdables')
+
+LeftGroupBox:AddLabel('These scripts might not work.')
+LeftGroupBox:AddToggle('MyToggle', {
+    Text = 'Activate Lighter',
+    Default = false, -- Default value (true / false)
+    Tooltip = 'Activates your lighter, But you have to have one equipped', -- Information shown when you hover over the toggle
+    Callback = function(Value)
+     game:GetService("Players").LocalPlayer.Character.Lighter.Remote:FireServer()
+    end
+})
+
+--
+RightGroupBox = Tabs.Main:AddRightGroupbox('Player')
+RightGroupBox:AddToggle('MyToggle', {
+    Text = 'No Acceleration',
+    Default = false, 
+    Tooltip = 'Blocks Acceleration.', 
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CustomPhysicalProperties = PhysicalProperties.new(100,0,0,0,0)
+    end
+})
+
+
+
+RightGroupBox:AddSlider('MySlider', {
+    Text = 'Speedboost',
+    Default = 0,
+    Min = 10,
+    Max = 35,
+    Rounding = 1,
+    Compact = false,
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid:SetAttribute("SpeedBoost", Value)
+    end
+})
+
+RightGroupBox:AddToggle('AutoInteractToggle', {
+    Text = 'Auto Interact',
+    Default = false,
+    Tooltip = 'Automaticlly picks up items for you, for lazy people',
+
+    Callback = function(Value)
+        if Value then
+            local function setup(room)
+                local function check(v)
+                    if v:IsA('Model') then
+                        if v.Name == 'DrawerContainer' then
+                            local knob = v:WaitForChild('Knobs')
+                            
+                            if knob then
+                                local prompt = knob:WaitForChild('ActivateEventPrompt')
+                                local interactions = prompt:GetAttribute('Interactions')
+                                
+                                if not interactions then
+                                    task.spawn(function()
+                                        repeat task.wait(0.1)
+                                            if plr:DistanceFromCharacter(knob.CFrame.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                fireproximityprompt(prompt)
+                                            end
+
+                                        until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                    end)
+                                end
+                            end
+                        elseif v.Name == 'GoldPile' and not Toggles.IgnoreGoldToggle.Value then
+                            local prompt = v:WaitForChild('LootPrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+                                
+                                if not interactions then
+                                    task.spawn(function()
+                                        repeat task.wait(0.1)
+                                            if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                fireproximityprompt(prompt)
+                                            end
+
+                                        until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value or not Toggles.IgnoreGoldToggle.Value
+                                    end)
+                                end
+                        elseif v.Name == 'KeyObtain' then
+                            local prompt = v:WaitForChild('ModulePrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+                                
+                            if not interactions then
+                                task.spawn(function()
+                                    repeat task.wait(0.1)
+                                        if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                            fireproximityprompt(prompt)
+                                        end
+
+                                    until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                end)
+                            end
+                        elseif v.Name == 'Door' and v:FindFirstChild('Lock') then
+                            local prompt = v.Lock:WaitForChild('UnlockPrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+
+                            if not Toggles.UseLockpicksToggle.Value then
+                                char.ChildAdded:Connect(function(Tool)
+                                    if Tool:IsA('Tool') and Tool.Name == 'Key' then
+                                        if not interactions then
+                                            task.spawn(function()
+                                                repeat task.wait(0.1)
+    
+                                                if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                    fireproximityprompt(prompt)
+                                                end
+
+                                            until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                        end)
+                                    end
+                                end
+                            end)
+                        else
+                            char.ChildAdded:Connect(function(Tool)
+                                if (Tool:IsA('Tool') and Tool.Name == 'Key') or (Tool:IsA('Tool') and Tool.Name == 'Lockpick') then
+                                    if not interactions then
+                                        task.spawn(function()
+                                            repeat task.wait(0.1)
+
+                                            if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                fireproximityprompt(prompt)
+                                            end
+
+                                        until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                    end)
+                                end
+                            end
+                        end)
+                    end
+                        elseif v.Name:sub(1, 8) == 'ChestBox' then
+                            local prompt = v:WaitForChild('ActivateEventPrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+                            
+                            if not interactions then
+                                task.spawn(function()
+                                    repeat task.wait(0.1)
+                                        if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                            fireproximityprompt(prompt)
+                                        end
+
+                                    until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                end)
+                            end
+                        elseif v.Name == 'RolltopContainer' then
+                            local prompt = v:WaitForChild('ActivateEventPrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+                            
+                            if not interactions then
+                                task.spawn(function()
+                                    repeat task.wait(0.1)
+                                        if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                            fireproximityprompt(prompt)
+                                        end
+
+                                    until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                end)
+                            end
+                        elseif v.Name == 'Candle' then
+                            local prompt = v:WaitForChild('ModulePrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+                                    
+                            if not interactions then
+                                task.spawn(function()
+                                    repeat task.wait(0.1)
+                                        if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                            fireproximityprompt(prompt)
+                                        end
+    
+                                    until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                end)
+                            end
+                    end
+                    elseif v.Name == 'Lockpick' then
+                        local prompt = v:WaitForChild('ModulePrompt')
+                        local interactions = prompt:GetAttribute('Interactions')
+                                
+                        if not interactions then
+                            task.spawn(function()
+                                repeat task.wait(0.1)
+                                    if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                        fireproximityprompt(prompt)
+                                    end
+
+                                until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                            end)
+                        end
+                    elseif v.Name == 'Bandage' then
+                        local prompt = v:WaitForChild('ModulePrompt')
+                        local interactions = prompt:GetAttribute('Interactions')
+                                
+                        if not interactions then
+                            task.spawn(function()
+                                repeat task.wait(0.1)
+                                    if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                        fireproximityprompt(prompt)
+                                    end
+
+                                until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                            end)
+                        end
+                    end
+                end
+        
+                local subaddconnect
+                subaddconnect = room.DescendantAdded:Connect(function(v)
+                    check(v)
+                end)
+                
+                for _, v in pairs(room:GetDescendants()) do
+                    check(v)
+                end
+                
+                task.spawn(function()
+                    repeat task.wait() until not Toggles.AutoInteractToggle.Value
+                    subaddconnect:Disconnect()
+                end)
+            end
+            
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                if room:FindFirstChild('Assets') then
+                    setup(room)
+                end
+            end
+
+            Toggles.UseLockpicksToggle:OnChanged(function()
+                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                    if room:FindFirstChild('Assets') then
+                        setup(room)
+                    end
+                end
+            end)
+            Toggles.IgnoreGoldToggle:OnChanged(function()
+                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                    if room:FindFirstChild('Assets') then
+                        setup(room)
+                    end
+                end
+            end)
+            Options.RangeMultiplierSlider:OnChanged(function()
+                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                    if room:FindFirstChild('Assets') then
+                        setup(room)
+                    end
+                end
+            end)
+            
+            repeat task.wait() until not Toggles.AutoInteractToggle.Value
+            addconnect:Disconnect()
+    end
+end
+
+--DISABLED
+LeftGroupBox = Tabs.Main:AddLeftGroupbox('Helpers')
+LeftGroupBox:AddToggle('MyToggle', {
+    Text = 'Rush Notifier',
+    Default = true, -- Default value (true / false)
+    Tooltip = 'This Toggle Notifys you if Rush is coming.', -- Information shown when you hover over the toggle
+    Callback = function(Value)
+        if value then
+        workspace.ChildAdded:Connect(function(Obj)
+            if Obj.Name:sub(1, 1) == "A" and Obj.Name ~= "RushMoving" then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = Obj.Name .. " Spawned ⚠️",
+                    Text = "Hide quick",
+                    Duration = 5
+                })
+            end
+        end)
+        workspace.ChildRemoved:Connect(function(Obj)
+            if Obj.Name:sub(1, 1) == "A" and Obj.Name ~= "RushMoving" then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = Obj.Name .. " DeSpawned ✅",
+                    Text = "Your alright",
+                    Duration = 5
+                })
+            end
+        end)
+    end,
+})
+
+LeftGroupBox:AddToggle('MyToggle', {
+    Text = 'Ambush Notifier',
+    Default = true, -- Default value (true / false)
+    Tooltip = 'This Toggle Notifys you if Ambush is coming.', -- Information shown when you hover over the toggle
+
+    Callback = function(Value)
+        workspace.ChildAdded:Connect(function(Obj)
+            if Obj.Name:sub(1, 1) == "A" and Obj.Name ~= "AmbushMoving" then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = Obj.Name .. " Spawned ⚠️",
+                    Text = "Hide quick",
+                    Duration = 5
+                })
+            end
+        end)
+        workspace.ChildRemoved:Connect(function(Obj)
+            if Obj.Name:sub(1, 1) == "A" and Obj.Name ~= "AmbushMoving" then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = Obj.Name .. " DeSpawned ✅",
+                    Text = "Your alright",
+                    Duration = 5
+                })
+            end
+        end)
+    end,
+})
+
+
+LeftGroupBox:AddToggle('LightToggle', {
+    Text = 'Light',
+    Default = false,
+    Tooltip = 'Makes it so you can see in the dark..',
+
+    Callback = function(Value)
+        if Value then
+            local HeadLight = Instance.new('SpotLight')
+            HeadLight.Name = 'HeadLight'
+            HeadLight.Brightness = Options.LightBrightnessSlider.Value
+            HeadLight.Face = Enum.NormalId.Front
+            HeadLight.Range = 100
+            HeadLight.Parent = char.Head
+            HeadLight.Enabled = true
+            Options.LightBrightnessSlider:OnChanged(function()
+                HeadLight.Brightness = Options.LightBrightnessSlider.Value
+            end)
+            
+            repeat task.wait() until not Toggles.LightToggle.Value
+            HeadLight:Destroy()
+        end
+    end
+})
+LeftGroupBox:AddToggle('LightToggle', {
+    Text = 'No seek',
+    Default = false,
+    Tooltip = 'Disables seek chase',
+
+    Callback = function(Value)
+        if Value then
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                local trigger = room:WaitForChild('TriggerEventCollision', 2)
+                
+                if trigger then
+                    trigger:Destroy()
+                end
+            end)
+            
+            repeat task.wait() until not Toggles.NoSeekTriggerToggle.Value
+            addconnect:Disconnect()
+        end
+    end
+})
+
+--UI 
+MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('Configs')
+MenuGroup:AddButton('Unload', function() Library:Unload() end)
+MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', { Default = 'RightShift', NoUI = true, Text = 'Menu keybind' })
+Library.ToggleKeybind = Options.MenuKeybind 
+-- Addons:
+-- SaveManager (Allows you to have a configuration system)
+-- ThemeManager (Allows you to have a menu theme system)
+
+-- Hand the library over to our managers
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+
+-- Ignore keys that are used by ThemeManager.
+-- (we dont want configs to save themes, do we?)
+SaveManager:IgnoreThemeSettings()
+
+-- Adds our MenuKeybind to the ignore list
+-- (do you want each config to have a different menu key? probably not.)
+SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
+
+-- use case for doing it this way:
+-- a script hub could have themes in a global folder
+-- and game configs in a separate folder per game
+ThemeManager:SetFolder('MyScriptHub')
+SaveManager:SetFolder('MyScriptHub/specific-game')
+
+-- Builds our config menu on the right side of our tab
+SaveManager:BuildConfigSection(Tabs['UI Settings'])
+
+-- Builds our theme menu (with plenty of built in themes) on the left side
+-- NOTE: you can also call ThemeManager:ApplyToGroupbox to add it to a specific groupbox
+ThemeManager:ApplyToTab(Tabs['UI Settings'])
+
+-- You can use the SaveManager:LoadAutoloadConfig() to load a config
+-- which has been marked to be one that auto loads!
+SaveManager:LoadAutoloadConfig()

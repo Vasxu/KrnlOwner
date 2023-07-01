@@ -1,0 +1,1927 @@
+local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
+
+local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
+local ThemeManager = loadstring(game:HttpGet(repo .. 'addons/ThemeManager.lua'))()
+local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
+
+local RunService = game:GetService('RunService')
+
+local plr = game.Players.LocalPlayer
+local char = plr.Character
+
+local EntityInfo = game.ReplicatedStorage:WaitForChild('EntityInfo')
+local EntityNames = { 'RushMoving', 'AmbushMoving', 'Eyes', 'Snare', 'A60', 'A120' }
+
+local Window = Library:CreateWindow({
+    Menu Title = 'Little frost | ' .. plr.DisplayName,',
+    Center = true,
+    AutoShow = true,
+    TabPadding = 8,
+    MenuFadeTime = 0.2
+})
+
+local Tabs = {
+    ['Main'] = Window:AddTab('Main'),
+    ['Exploits'] = Window:AddTab('Exploits'),
+    ['Visuals'] = Window:AddTab('Visuals'),
+    ['Config'] = Window:AddTab('Config'),
+}
+
+local Main_Automation = Tabs['Main']:AddLeftGroupbox('Automation')
+Main_Automation:AddToggle('ReviveOnDeathToggle', {
+    Text = 'Revive On Death',
+    Default = false,
+    Tooltip = 'Prompts you to revive on death. (Will take from your revives or prompt to buy one)',
+
+    Callback = function(Value)
+        if Value then
+            local function Callback(answer)
+                if answer == 'Yes' then
+                    EntityInfo:WaitForChild('Revive'):FireServer()
+                end
+            end
+            
+            local debounce = false
+            
+            local addconnect
+            addconnect = char.Humanoid.Died:Connect(function()
+                if debounce then return end
+                debounce = true
+            
+                local Bindable = Instance.new('BindableFunction')
+                Bindable.OnInvoke = Callback
+            
+                game.StarterGui:SetCore('SendNotification', {
+                    Title = 'Revive?';
+                    Text = '(Will take from your revives or prompt to buy one)';
+                    Duration = '3000';
+                    Button1 = 'Yes';
+                    Button2 = 'No';
+                    Callback = Bindable
+                })
+            end)
+
+            repeat task.wait() until not Toggles.ReviveOnDeathToggle.Value
+            addconnect:Disconnect()
+        end
+    end
+})
+Main_Automation:AddToggle('GodModeToggle', {
+    Text = 'God Mode (READ THE TOOLTIP)',
+    Default = false,
+    Tooltip = '(TPs you under the map)',
+
+    Callback = function(Value)
+        if Value then
+            local addconnect
+            local oldPos
+            addconnect = workspace.ChildAdded:Connect(function(inst)
+                if (table.find(EntityNames, inst.Name) and inst.Name ~= 'Snare' and inst.Name ~= 'Eyes') then
+                    repeat task.wait() until plr:DistanceFromCharacter(inst:GetPivot().Position) < 1000 or not inst:IsDescendantOf(workspace)
+
+                    oldPos = char.HumanoidRootPart.Position
+                    local con = RunService.Heartbeat:Connect(function()
+                        char:MoveTo(oldPos - Vector3.new(0, 20, 0))
+                    end)
+ 
+                    inst.Destroying:Wait()
+                    con:Disconnect()
+ 
+                    char:MoveTo(oldPos)
+                end
+            end)
+            
+            repeat task.wait() until not Toggles.GodModeToggle.Value
+            addconnect:Disconnect()
+            char:MoveTo(oldPos)
+        end
+    end
+})
+Main_Automation:AddDivider()
+Main_Automation:AddToggle('AutoInteractToggle', {
+    Text = 'Auto Interact',
+    Default = false,
+    Tooltip = 'Makes you pickup all near items.',
+
+    Callback = function(Value)
+        if Value then
+            local function setup(room)
+                local function check(v)
+                    if v:IsA('Model') then
+                        if v.Name == 'DrawerContainer' then
+                            local knob = v:WaitForChild('Knobs')
+                            
+                            if knob then
+                                local prompt = knob:WaitForChild('ActivateEventPrompt')
+                                local interactions = prompt:GetAttribute('Interactions')
+                                
+                                if not interactions then
+                                    task.spawn(function()
+                                        repeat task.wait(0.1)
+                                            if plr:DistanceFromCharacter(knob.CFrame.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                fireproximityprompt(prompt)
+                                            end
+
+                                        until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                    end)
+                                end
+                            end
+                        elseif v.Name == 'GoldPile' and not Toggles.IgnoreGoldToggle.Value then
+                            local prompt = v:WaitForChild('LootPrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+                                
+                                if not interactions then
+                                    task.spawn(function()
+                                        repeat task.wait(0.1)
+                                            if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                fireproximityprompt(prompt)
+                                            end
+
+                                        until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value or not Toggles.IgnoreGoldToggle.Value
+                                    end)
+                                end
+                        elseif v.Name == 'KeyObtain' then
+                            local prompt = v:WaitForChild('ModulePrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+                                
+                            if not interactions then
+                                task.spawn(function()
+                                    repeat task.wait(0.1)
+                                        if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                            fireproximityprompt(prompt)
+                                        end
+
+                                    until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                end)
+                            end
+                        elseif v.Name == 'Door' and v:FindFirstChild('Lock') then
+                            local prompt = v.Lock:WaitForChild('UnlockPrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+
+                            if not Toggles.UseLockpicksToggle.Value then
+                                char.ChildAdded:Connect(function(Tool)
+                                    if Tool:IsA('Tool') and Tool.Name == 'Key' then
+                                        if not interactions then
+                                            task.spawn(function()
+                                                repeat task.wait(0.1)
+    
+                                                if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                    fireproximityprompt(prompt)
+                                                end
+
+                                            until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                        end)
+                                    end
+                                end
+                            end)
+                        else
+                            char.ChildAdded:Connect(function(Tool)
+                                if (Tool:IsA('Tool') and Tool.Name == 'Key') or (Tool:IsA('Tool') and Tool.Name == 'Lockpick') then
+                                    if not interactions then
+                                        task.spawn(function()
+                                            repeat task.wait(0.1)
+
+                                            if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                fireproximityprompt(prompt)
+                                            end
+
+                                        until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                    end)
+                                end
+                            end
+                        end)
+                    end
+                        elseif v.Name:sub(1, 8) == 'ChestBox' then
+                            local prompt = v:WaitForChild('ActivateEventPrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+                            
+                            if not interactions then
+                                task.spawn(function()
+                                    repeat task.wait(0.1)
+                                        if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                            fireproximityprompt(prompt)
+                                        end
+
+                                    until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                end)
+                            end
+                        elseif v.Name == 'RolltopContainer' then
+                            local prompt = v:WaitForChild('ActivateEventPrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+                            
+                            if not interactions then
+                                task.spawn(function()
+                                    repeat task.wait(0.1)
+                                        if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                            fireproximityprompt(prompt)
+                                        end
+
+                                    until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                end)
+                            end
+                        elseif v.Name == 'Candle' then
+                            local prompt = v:WaitForChild('ModulePrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+                                    
+                            if not interactions then
+                                task.spawn(function()
+                                    repeat task.wait(0.1)
+                                        if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                            fireproximityprompt(prompt)
+                                        end
+    
+                                    until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                end)
+                            end
+                    end
+                    elseif v.Name == 'Lockpick' then
+                        local prompt = v:WaitForChild('ModulePrompt')
+                        local interactions = prompt:GetAttribute('Interactions')
+                                
+                        if not interactions then
+                            task.spawn(function()
+                                repeat task.wait(0.1)
+                                    if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                        fireproximityprompt(prompt)
+                                    end
+
+                                until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                            end)
+                        end
+                    elseif v.Name == 'Bandage' then
+                        local prompt = v:WaitForChild('ModulePrompt')
+                        local interactions = prompt:GetAttribute('Interactions')
+                                
+                        if not interactions then
+                            task.spawn(function()
+                                repeat task.wait(0.1)
+                                    if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                        fireproximityprompt(prompt)
+                                    end
+
+                                until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                            end)
+                        end
+                    end
+                end
+        
+                local subaddconnect
+                subaddconnect = room.DescendantAdded:Connect(function(v)
+                    check(v)
+                end)
+                
+                for _, v in pairs(room:GetDescendants()) do
+                    check(v)
+                end
+                
+                task.spawn(function()
+                    repeat task.wait() until not Toggles.AutoInteractToggle.Value
+                    subaddconnect:Disconnect()
+                end)
+            end
+            
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                if room:FindFirstChild('Assets') then
+                    setup(room)
+                end
+            end
+
+            Toggles.UseLockpicksToggle:OnChanged(function()
+                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                    if room:FindFirstChild('Assets') then
+                        setup(room)
+                    end
+                end
+            end)
+            Toggles.IgnoreGoldToggle:OnChanged(function()
+                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                    if room:FindFirstChild('Assets') then
+                        setup(room)
+                    end
+                end
+            end)
+            Options.RangeMultiplierSlider:OnChanged(function()
+                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                    if room:FindFirstChild('Assets') then
+                        setup(room)
+                    end
+                end
+            end)
+            
+            repeat task.wait() until not Toggles.AutoInteractToggle.Value
+            addconnect:Disconnect()
+    end
+end
+}):AddKeyPicker('AutoInteractKeybind', {
+    Default = 'R',
+
+    Mode = 'Hold',
+
+    Text = 'Auto Interact',
+    NoUI = false,
+})
+Main_Automation:AddToggle('UseLockpicksToggle', {
+    Text = 'Use Lockpicks',
+    Default = false,
+    Tooltip = 'Use lockpics to unlock doors with auto interact.'
+})
+Main_Automation:AddToggle('IgnoreGoldToggle', {
+    Text = 'Ignore Gold',
+    Default = false,
+    Tooltip = 'Exclude gold from auto interact.',
+})
+Main_Automation:AddSlider('RangeMultiplierSlider', {
+    Text = 'Range Multiplier',
+    Default = 1,
+    Min = 1,
+    Max = 2,
+    Rounding = 0,
+    Compact = false
+})
+task.spawn(function()
+    while true do
+        task.wait(1)
+
+        local state = Options.AutoInteractKeybind:GetState()
+        if state then
+                local function setup(room)
+                    local function check(v)
+                        if v:IsA('Model') then
+                            if v.Name == 'DrawerContainer' then
+                                local knob = v:WaitForChild('Knobs')
+                                
+                                if knob then
+                                    local prompt = knob:WaitForChild('ActivateEventPrompt')
+                                    local interactions = prompt:GetAttribute('Interactions')
+                                    
+                                    if not interactions then
+                                        task.spawn(function()
+                                            repeat task.wait(0.1)
+                                                if plr:DistanceFromCharacter(knob.CFrame.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                    fireproximityprompt(prompt)
+                                                end
+    
+                                            until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                        end)
+                                    end
+                                end
+                            elseif v.Name == 'GoldPile' and not Toggles.IgnoreGoldToggle.Value then
+                                local prompt = v:WaitForChild('LootPrompt')
+                                local interactions = prompt:GetAttribute('Interactions')
+                                    
+                                    if not interactions then
+                                        task.spawn(function()
+                                            repeat task.wait(0.1)
+                                                if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                    fireproximityprompt(prompt)
+                                                end
+    
+                                            until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value or not Toggles.IgnoreGoldToggle.Value
+                                        end)
+                                    end
+                            elseif v.Name == 'KeyObtain' then
+                                local prompt = v:WaitForChild('ModulePrompt')
+                                local interactions = prompt:GetAttribute('Interactions')
+                                    
+                                if not interactions then
+                                    task.spawn(function()
+                                        repeat task.wait(0.1)
+                                            if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                fireproximityprompt(prompt)
+                                            end
+    
+                                        until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                    end)
+                                end
+                            elseif v.Name == 'Door' and v:FindFirstChild('Lock') then
+                                local prompt = v.Lock:WaitForChild('UnlockPrompt')
+                                local interactions = prompt:GetAttribute('Interactions')
+    
+                                if not Toggles.UseLockpicksToggle.Value then
+                                    char.ChildAdded:Connect(function(Tool)
+                                        if Tool:IsA('Tool') and Tool.Name == 'Key' then
+                                            if not interactions then
+                                                task.spawn(function()
+                                                    repeat task.wait(0.1)
+        
+                                                    if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                        fireproximityprompt(prompt)
+                                                    end
+    
+                                                until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                            end)
+                                        end
+                                    end
+                                end)
+                            else
+                                char.ChildAdded:Connect(function(Tool)
+                                    if (Tool:IsA('Tool') and Tool.Name == 'Key') or (Tool:IsA('Tool') and Tool.Name == 'Lockpick') then
+                                        if not interactions then
+                                            task.spawn(function()
+                                                repeat task.wait(0.1)
+    
+                                                if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                    fireproximityprompt(prompt)
+                                                end
+    
+                                            until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                        end)
+                                    end
+                                end
+                            end)
+                        end
+                            elseif v.Name:sub(1, 8) == 'ChestBox' then
+                                local prompt = v:WaitForChild('ActivateEventPrompt')
+                                local interactions = prompt:GetAttribute('Interactions')
+                                
+                                if not interactions then
+                                    task.spawn(function()
+                                        repeat task.wait(0.1)
+                                            if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                fireproximityprompt(prompt)
+                                            end
+    
+                                        until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                    end)
+                                end
+                            elseif v.Name == 'RolltopContainer' then
+                                local prompt = v:WaitForChild('ActivateEventPrompt')
+                                local interactions = prompt:GetAttribute('Interactions')
+                                
+                                if not interactions then
+                                    task.spawn(function()
+                                        repeat task.wait(0.1)
+                                            if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                fireproximityprompt(prompt)
+                                            end
+    
+                                        until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                    end)
+                                end
+                            elseif v.Name == 'Candle' then
+                                local prompt = v:WaitForChild('ModulePrompt')
+                                local interactions = prompt:GetAttribute('Interactions')
+                                        
+                                if not interactions then
+                                    task.spawn(function()
+                                        repeat task.wait(0.1)
+                                            if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                                fireproximityprompt(prompt)
+                                            end
+        
+                                        until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                    end)
+                                end
+                        end
+                        elseif v.Name == 'Lockpick' then
+                            local prompt = v:WaitForChild('ModulePrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+                                    
+                            if not interactions then
+                                task.spawn(function()
+                                    repeat task.wait(0.1)
+                                        if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                            fireproximityprompt(prompt)
+                                        end
+    
+                                    until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                end)
+                            end
+                        elseif v.Name == 'Bandage' then
+                            local prompt = v:WaitForChild('ModulePrompt')
+                            local interactions = prompt:GetAttribute('Interactions')
+                                    
+                            if not interactions then
+                                task.spawn(function()
+                                    repeat task.wait(0.1)
+                                        if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 * Options.RangeMultiplierSlider.Value then
+                                            fireproximityprompt(prompt)
+                                        end
+    
+                                    until prompt:GetAttribute('Interactions') or not Toggles.AutoInteractToggle.Value
+                                end)
+                            end
+                        end
+                    end
+            
+                    local subaddconnect
+                    subaddconnect = room.DescendantAdded:Connect(function(v)
+                        check(v)
+                    end)
+                    
+                    for _, v in pairs(room:GetDescendants()) do
+                        check(v)
+                    end
+                    
+                    task.spawn(function()
+                        repeat task.wait() until not Toggles.AutoInteractToggle.Value
+                        subaddconnect:Disconnect()
+                    end)
+                end
+                
+                local addconnect
+                addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                    setup(room)
+                end)
+                
+                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                    if room:FindFirstChild('Assets') then
+                        setup(room)
+                    end
+                end
+    
+                Toggles.UseLockpicksToggle:OnChanged(function()
+                    for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                        if room:FindFirstChild('Assets') then
+                            setup(room)
+                        end
+                    end
+                end)
+                Toggles.IgnoreGoldToggle:OnChanged(function()
+                    for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                        if room:FindFirstChild('Assets') then
+                            setup(room)
+                        end
+                    end
+                end)
+                Options.RangeMultiplierSlider:OnChanged(function()
+                    for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                        if room:FindFirstChild('Assets') then
+                            setup(room)
+                        end
+                    end
+                end)
+                
+                repeat task.wait() until not Toggles.AutoInteractToggle.Value
+                addconnect:Disconnect()
+            end
+
+        if Library.Unloaded then break end
+    end
+end)
+Main_Automation:AddDivider()
+Main_Automation:AddToggle('AutoPadlockCodeToggle', {
+    Text = 'Auto Padlock Code',
+    Default = false,
+    Tooltip = 'Auto unlocks door 50. (You need to hold the paper)',
+
+    Callback = function(Value)
+        if Value then
+            local function deciphercode()
+            local paper = char:FindFirstChild('LibraryHintPaper')
+            local hints = plr.PlayerGui:WaitForChild('PermUI'):WaitForChild('Hints')
+            
+            local code = {[1]='_', [2]='_', [3]='_', [4]='_', [5]='_'}
+                
+                if paper then
+                    for _, v in pairs(paper:WaitForChild('UI'):GetChildren()) do
+                        if v:IsA('ImageLabel') and v.Name ~= 'Image' then
+                            for _, img in pairs(hints:GetChildren()) do
+                                if img:IsA('ImageLabel') and img.Visible and v.ImageRectOffset == img.ImageRectOffset then
+                                    local num = img:FindFirstChild('TextLabel').Text
+                                    
+                                    code[tonumber(v.Name)] = num
+                                end
+                            end
+                        end
+                    end
+                end
+                
+                return code
+            end
+            
+            local addconnect
+            addconnect = char.ChildAdded:Connect(function(v)
+                if v:IsA('Tool') and v.Name == 'LibraryHintPaper' then
+                    task.wait()
+                    
+                    local code = table.concat(deciphercode())
+                    
+                    if not code:find('_') then
+                        EntityInfo.PL:FireServer(code)
+                    end
+                end
+            end)
+            
+            repeat task.wait() until not Toggles.AutoPadlockCodeToggle.Value
+            addconnect:Disconnect()
+        end
+    end
+})
+
+local Main_Miscellaneous = Tabs['Main']:AddLeftGroupbox('Miscellaneous')
+local ReviveButton = Main_Miscellaneous:AddButton({
+    Text = 'Revive',
+    Func = function()
+        EntityInfo:WaitForChild('Revive'):FireServer()
+    end,
+    DoubleClick = false,
+    Tooltip = 'Prompts you to revive. (Will take from your revives or prompt to buy one)'
+})
+local RestartButton = Main_Miscellaneous:AddButton({
+    Text = 'Restart',
+    Func = function()
+        EntityInfo:WaitForChild('PlayAgain'):FireServer()
+    end,
+    DoubleClick = false,
+    Tooltip = 'Puts you in a new round.'
+})
+local LobbyButton = Main_Miscellaneous:AddButton({
+    Text = 'Lobby',
+    Func = function()
+        EntityInfo:WaitForChild('Lobby'):FireServer()
+    end,
+    DoubleClick = false,
+    Tooltip = 'Teleports you to the lobby.'
+})
+
+local Main_Notifying = Tabs['Main']:AddRightGroupbox('Notifying')
+Main_Notifying:AddToggle('NotifyPadlockCodeToggle', {
+    Text = 'Padlock Code',
+    Default = false,
+    Tooltip = 'Notifies you when the padlock code has been generated. (You need to hold the paper)',
+
+    Callback = function(Value)
+        if Value then
+            local function deciphercode()
+            local paper = char:FindFirstChild('LibraryHintPaper')
+            local hints = plr.PlayerGui:WaitForChild('PermUI'):WaitForChild('Hints')
+            
+            local code = {[1]='_', [2]='_', [3]='_', [4]='_', [5]='_'}
+                
+                if paper then
+                    for _, v in pairs(paper:WaitForChild('UI'):GetChildren()) do
+                        if v:IsA('ImageLabel') and v.Name ~= 'Image' then
+                            for _, img in pairs(hints:GetChildren()) do
+                                if img:IsA('ImageLabel') and img.Visible and v.ImageRectOffset == img.ImageRectOffset then
+                                    local num = img:FindFirstChild('TextLabel').Text
+                                    
+                                    code[tonumber(v.Name)] = num
+                                end
+                            end
+                        end
+                    end
+                end
+                
+                return code
+            end
+            
+            local addconnect
+            addconnect = char.ChildAdded:Connect(function(v)
+                if v:IsA('Tool') and v.Name == 'LibraryHintPaper' then
+                    task.wait()
+                    
+                    local code = table.concat(deciphercode())
+                    
+                    if not code:find('_') then
+                        Library:Notify('The code is '.. code, 5)
+                    end
+                end
+            end)
+            
+            repeat task.wait() until not Toggles.NotifyPadlockCodeToggle.Value
+            addconnect:Disconnect()
+        end
+    end
+})
+Main_Notifying:AddDivider()
+Main_Notifying:AddToggle('EntityNotificationToggle', {
+    Text = 'Entity Notification',
+    Default = false,
+    Tooltip = 'Notifies you when entities spawn.',
+
+    Callback = function(Value)
+        if Value then
+            local addconnect
+            addconnect = workspace.ChildAdded:Connect(function(v)
+                if table.find(EntityNames, v.Name) then
+                    repeat task.wait() until plr:DistanceFromCharacter(v:GetPivot().Position) < 1000 or not v:IsDescendantOf(workspace)
+                   
+                    if v:IsDescendantOf(workspace) and v.Name ~= 'Eyes' and v.Name ~= 'Snare' then
+                        Library:Notify('Hide! '..v.Name:gsub('Moving','')..' is coming.', 5)
+                    elseif v:IsDescendantOf(workspace) and v.Name == 'Eyes' then
+                        Library:Notify('Look Around! '..v.Name..' has spawned.', 5)
+                    end
+                end
+            end)
+            
+            repeat task.wait() until not Toggles.EntityNotificationToggle.Value
+            addconnect:Disconnect()
+        end
+    end
+})
+Main_Notifying:AddToggle('EntitySoundNotificationToggle', {
+    Text = 'Entity Sound Notification',
+    Default = false,
+    Tooltip = 'Makes sound when entities spawn.',
+
+    Callback = function(Value)
+        if Value then
+            local beepSound = Instance.new('Sound', char)
+            beepSound.Name = 'beep'
+            beepSound.SoundId = 'rbxassetid://1283290053'
+            beepSound.Looped = false
+
+            local addconnect
+            addconnect = workspace.ChildAdded:Connect(function(v)
+                if table.find(EntityNames, v.Name) then
+                    repeat task.wait() until plr:DistanceFromCharacter(v:GetPivot().Position) < 1000 or not v:IsDescendantOf(workspace)
+                   
+                    if v:IsDescendantOf(workspace) then
+                        beepSound:Play()
+                    end
+                end
+            end)
+            
+            repeat task.wait() until not Toggles.EntitySoundNotificationToggle.Value
+            addconnect:Disconnect()
+            beepSound:Destroy()
+        end
+    end
+})
+
+local Main_Self = Tabs['Main']:AddRightGroupbox('Self')
+Main_Self:AddToggle('LightToggle', {
+    Text = 'Light',
+    Default = false,
+    Tooltip = 'Makes you see in the dark.',
+
+    Callback = function(Value)
+        if Value then
+            local HeadLight = Instance.new('SpotLight')
+            HeadLight.Name = 'HeadLight'
+            HeadLight.Brightness = Options.LightBrightnessSlider.Value
+            HeadLight.Face = Enum.NormalId.Front
+            HeadLight.Range = 100
+            HeadLight.Parent = char.Head
+            HeadLight.Enabled = true
+
+            Options.LightBrightnessSlider:OnChanged(function()
+                HeadLight.Brightness = Options.LightBrightnessSlider.Value
+            end)
+            
+            repeat task.wait() until not Toggles.LightToggle.Value
+            HeadLight:Destroy()
+        end
+    end
+})
+Main_Self:AddSlider('LightBrightnessSlider', {
+    Text = 'Light Brightness',
+    Default = 0,
+    Min = 0,
+    Max = 1,
+    Rounding = 1,
+    Compact = false
+})
+
+-- Exploits Tab
+local Exploits_MotorReplication = Tabs['Exploits']:AddLeftGroupbox('Motor Replication')
+Exploits_MotorReplication:AddToggle('MotorReplicationEnabledToggle', {
+    Text = 'Enabled',
+    Default = false,
+    Tooltip = 'Turns on motor replication modifier.'
+})
+Exploits_MotorReplication:AddToggle('MotorReplicationEyesOnlyToggle', {
+    Text = 'Eyes Only',
+    Default = false,
+    Tooltip = 'Turns on motor replication modifier for eyes only.'
+})
+Exploits_MotorReplication:AddSlider('MotorReplicationLegRotationSlider', {
+    Text = 'Leg Rotation',
+    Default = 0,
+    Min = -4,
+    Max = 4,
+    Rounding = 1,
+    Compact = true
+})
+Exploits_MotorReplication:AddSlider('MotorReplicationHeadPitchSlider', {
+    Text = 'Head Pitch',
+    Default = 0,
+    Min = -720,
+    Max = 720,
+    Rounding = 0,
+    Compact = true
+})
+Exploits_MotorReplication:AddSlider('MotorReplicationBodyRotationSlider', {
+    Text = 'Body Rotation',
+    Default = 0,
+    Min = -720,
+    Max = 720,
+    Rounding = 0,
+    Compact = true
+})
+Exploits_MotorReplication:AddDivider()
+Exploits_MotorReplication:AddToggle('MotorReplicationRandomizeToggle', {
+    Text = 'Randomize',
+    Default = false,
+    Tooltip = 'Randomizes the motor replication modifier.',
+})
+local MotorReplicationSetToDefaultButton = Exploits_MotorReplication:AddButton({
+    Text = 'Set To Default',
+    Func = function()
+        Toggles.MotorReplicationEnabledToggle:SetValue(false)
+        Toggles.MotorReplicationEyesOnlyToggle:SetValue(false)
+        Options.MotorReplicationLegRotationSlider:SetValue(0)
+        Options.MotorReplicationHeadPitchSlider:SetValue(0)
+        Options.MotorReplicationBodyRotationSlider:SetValue(0)
+        Toggles.MotorReplicationRandomizeToggle:SetValue(false)
+    end,
+    DoubleClick = false,
+    Tooltip = 'Sets the motor replication modifier to default.'
+})
+local motorReplicationHook
+motorReplicationHook = hookmetamethod(game, '__namecall', function(self, ...)
+    local Args = {...}
+
+    if getnamecallmethod() == 'FireServer' and self.Name == 'MotorReplication' then
+        if not Toggles.MotorReplicationEnabledToggle.Value or not Toggles.MotorReplicationEyesOnlyToggle.Value or not Toggles.MotorReplicationRandomizeToggle.Value then end
+
+        if Toggles.MotorReplicationEnabledToggle.Value then
+            Args[1] = Options.MotorReplicationLegRotationSlider.Value
+            Args[3] = Options.MotorReplicationBodyRotationSlider.Value
+        elseif Toggles.MotorReplicationRandomizeToggle.Value and not Toggles.MotorReplicationEnabledToggle.Value then
+            Args[1] = math.random(-4, 4)
+            Args[3] = math.random(-720, 720)
+        end
+
+        if Toggles.MotorReplicationEyesOnlyToggle.Value then
+            local addconnect
+            addconnect = workspace.ChildAdded:Connect(function(v)
+                if table.find(EntityNames, v.Name) and v.Name == 'Eyes' then
+                    repeat task.wait() until plr:DistanceFromCharacter(v:GetPivot().Position) < 1000 or not v:IsDescendantOf(workspace)
+                   
+                    if v:IsDescendantOf(workspace) and v.Name == 'Eyes' then
+                        Args[2] = -90
+                    end
+
+                    repeat task.wait() until not v.Destroying:Wait()
+                    addconnect:Disconnect()
+                end
+            end)
+        elseif Toggles.MotorReplicationRandomizeToggle.Value and not Toggles.MotorReplicationEnabledToggle.Value and not Toggles.MotorReplicationEyesOnlyToggle.Value then
+            Args[2] = math.random(-720, 720)
+        elseif Toggles.MotorReplicationEnabledToggle.Value and not Toggles.MotorReplicationEyesOnlyToggle.Value then
+            Args[2] = Options.MotorReplicationHeadPitchSlider.Value
+        end
+
+        motorReplicationHook(self, unpack(Args))
+        return
+    end
+
+    return motorReplicationHook(self, ...)
+end)
+
+local Exploits_Self = Tabs['Exploits']:AddRightGroupbox('Self')
+Exploits_Self:AddToggle('NoSeekTriggerToggle', {
+    Text = 'No Seek Trigger',
+    Default = false,
+    Tooltip = 'Disables Seek chase.',
+
+    Callback = function(Value)
+        if Value then
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                local trigger = room:WaitForChild('TriggerEventCollision', 2)
+                
+                if trigger then
+                    trigger:Destroy()
+                end
+            end)
+            
+            repeat task.wait() until not Toggles.NoSeekTriggerToggle.Value
+            addconnect:Disconnect()
+        end
+    end
+})
+Exploits_Self:AddToggle('NoSeekArmsToggle', {
+    Text = 'No Seek Arms',
+    Default = false,
+    Tooltip = 'Disables Seek arms.',
+
+    Callback = function(Value)
+        if Value then
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                for _, v in pairs(room:WaitForChild('Assets'):GetChildren()) do
+                    if v.Name == 'Seek_Arm' then
+                        v:Destroy()
+                    end
+                end
+            end)
+            
+            repeat task.wait() until not Toggles.NoSeekArmsToggle.Value
+            addconnect:Disconnect()
+        end
+    end
+})
+
+
+-- Visuals Tab
+local Visuals_ESP = Tabs['Visuals']:AddLeftGroupbox('ESP')
+function ESP(what, color, core, name)
+    local ESPFolder = game.CoreGui:FindFirstChild('ESP_Folder') or Instance.new('Folder', game.CoreGui)
+    ESPFolder.Name = 'ESP_Folder'
+
+    local parts
+    
+    if table.find(EntityNames, what.Name) and what:IsA('Model') then
+        parts = what:GetChildren()
+    end
+    
+    local bill
+    local colorOverride = color
+    local boxes = {}
+    local highlights = {}
+    
+    if table.find(EntityNames, what.Name) and what:IsA('Model') then
+        for _, v in pairs(parts) do
+            if v:IsA('BasePart') then
+                local box = Instance.new('BoxHandleAdornment', ESPFolder)
+                box.Size = v.Size
+                box.AlwaysOnTop = true
+                box.ZIndex = 1
+                box.AdornCullingMode = Enum.AdornCullingMode.Never
+                box.Color3 = colorOverride
+                box.Transparency = 0.7
+                box.Adornee = v
+                
+                table.insert(boxes, box)
+
+                task.spawn(function()
+                    while box do
+                        if box.Adornee == nil or not box.Adornee:IsDescendantOf(workspace) then
+                            box.Adornee = nil
+                            box.Visible = false
+                            box:Destroy()
+                        end
+
+                        task.wait()
+                    end
+                end)
+            end
+        end
+    else
+        local highlight = Instance.new('Highlight', ESPFolder)
+        highlight.Adornee = what
+        highlight.FillColor = colorOverride
+        highlight.FillTransparency = 0.7
+        highlight.OutlineColor = colorOverride
+
+        table.insert(highlights, highlight)
+
+        task.spawn(function()
+            while highlight do
+                if highlight.Adornee == nil or not highlight.Adornee:IsDescendantOf(workspace) then
+                    highlight.Adornee = nil
+                    highlight.Enabled = false
+                    highlight:Destroy()
+                end
+
+                task.wait()
+            end
+        end)
+    end
+
+    if core and name then
+        bill = Instance.new('BillboardGui', ESPFolder)
+        bill.AlwaysOnTop = true
+        bill.Size = UDim2.new(0,400, 0,100)
+        bill.Adornee = core
+        bill.MaxDistance = 2000
+        
+        local mid = Instance.new('Frame', bill)
+        mid.Name = 'MidPointFrame'
+        mid.AnchorPoint = Vector2.new(0.5, 0.5)
+        mid.BackgroundColor3 = colorOverride
+        mid.Size = UDim2.new(0, 8, 0, 8)
+        mid.Position = UDim2.new(0.5, 0, 0.5, 0)
+        Instance.new('UICorner', mid).CornerRadius = UDim.new(1, 0)
+        Instance.new('UIStroke', mid)
+        
+        local txt = Instance.new('TextLabel', bill)
+        txt.Name = 'NameTextLabel'
+        txt.AnchorPoint = Vector2.new(0.5, 0.5)
+        txt.BackgroundTransparency = 1
+        txt.BackgroundColor3 = colorOverride
+        txt.TextColor3 = colorOverride
+        txt.Size = UDim2.new(1,0, 0,20)
+        txt.Position = UDim2.new(0.5,0, 0.7,0)
+        txt.Text = name
+        Instance.new('UIStroke', txt)
+
+        local distance = Instance.new('TextLabel', bill)
+        distance.Name = 'DistanceTextLabel'
+        distance.AnchorPoint = Vector2.new(0.5, 0.5)
+        distance.BackgroundTransparency = 1
+        distance.BackgroundColor3 = colorOverride
+        distance.TextColor3 = colorOverride
+        distance.Size = UDim2.new(1,0, 0,20)
+        distance.Position = UDim2.new(0.5,0, 0.9,0)
+        distance.Text = '[ '..tostring(math.round(plr:DistanceFromCharacter(core.Position))).. ' ]'
+        Instance.new('UIStroke', distance)
+        
+        task.spawn(function()
+            while bill do
+                if bill.Adornee == nil or not bill.Adornee:IsDescendantOf(workspace) then
+                    bill.Enabled = false
+                    bill.Adornee = nil
+                    bill:Destroy()
+                end
+                task.wait()
+
+                local addconnect
+                addconnect = RunService.RenderStepped:Connect(function()
+                    distance.Text = '[ '..tostring(math.round(plr:DistanceFromCharacter(core.Position))).. ' ]'
+                end)
+
+                repeat task.wait() until not bill
+                addconnect:Disconnect()
+            end
+        end)
+    end
+    
+    local ret = {}
+    
+    ret.delete = function()
+        for _, v in pairs(boxes) do
+            v.Adornee = nil
+            v.Visible = false
+            v:Destroy()
+        end
+
+        for _, v in pairs(highlights) do
+            v.Adornee = nil
+            v.Enabled = false
+            v:Destroy()
+        end
+        
+        if bill then
+            bill.Enabled = false
+            bill.Adornee = nil
+            bill:Destroy()
+        end
+    end
+
+    ret.setColor = function(newColor)
+        if bill ~= nil then
+            colorOverride = newColor
+
+            for _, v in pairs(boxes) do
+                v.Color3 = newColor
+            end
+
+           for _, v in pairs(bill:GetChildren()) do
+                if v.ClassName == 'Frame' then
+                    v.BackgroundColor3 = newColor
+                elseif v.ClassName == 'TextLabel' then
+                    v.BackgroundColor3 = newColor
+                    v.TextColor3 = newColor
+                end
+           end
+
+           for _, v in pairs(highlights) do
+                v.FillColor = newColor
+                v.OutlineColor = newColor
+             end
+        end
+    end
+    
+    return ret
+end
+local ESPTable = { doors={}, keys={}, items={}, books={}, entity={}, chests={}, lockers={}, people={}, gold={} }
+Visuals_ESP:AddToggle('EntitiesESPToggle', {
+    Text = 'Entities',
+    Default = false,
+    Tooltip = 'Enables Entities ESP.',
+
+    Callback = function(Value)
+        if Value then
+            local addconnect
+            addconnect = workspace.ChildAdded:Connect(function(v)
+                if table.find(EntityNames, v.Name) then
+                    task.wait(0.1)
+                    
+                    local h = ESP(v, Options.EntityESPColor.Value, v.PrimaryPart, v.Name:gsub('Moving',''))
+                    table.insert(ESPTable.entity, h)
+                end
+            end)
+            
+            local function setup(room)
+                if room.Name == '50' or room.Name == '100' then
+                    local figuresetup = room:WaitForChild('FigureSetup')
+                
+                    if figuresetup then
+                        local fig = figuresetup:WaitForChild('FigureRagdoll')
+                        task.wait(0.1)
+                        
+                        local h = ESP(fig ,Color3.fromRGB(255, 25, 25), fig.PrimaryPart, 'Figure')
+                        table.insert(ESPTable.entity, h)
+                    end
+                else
+                    local assets = room:WaitForChild('Assets')
+                    
+                    local function check(v)
+                        if v:IsA('Model') and table.find(EntityNames, v.Name) then
+                            task.wait(0.1)
+                            
+                            local h = ESP(v:WaitForChild('Base'), Color3.fromRGB(255, 25, 25), v.Base, 'Snare')
+                            table.insert(ESPTable.entity, h)
+                        end
+                    end
+                    
+                    assets.DescendantAdded:Connect(function(v)
+                        check(v)
+                    end)
+                    
+                    for _, v in pairs(assets:GetDescendants()) do
+                        check(v)
+                    end
+                end
+            end
+            
+            local roomconnect
+            roomconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, v in pairs(workspace.CurrentRooms:GetChildren()) do
+                setup(v)
+            end
+            
+            repeat task.wait() until not Toggles.EntitiesESPToggle.Value
+            addconnect:Disconnect()
+            roomconnect:Disconnect()
+            
+            for _, v in pairs(ESPTable.entity) do
+                v.delete()
+            end
+        end
+    end
+})
+Visuals_ESP:AddToggle('WardrobeESPToggle', {
+    Text = 'Wardrobe',
+    Default = false,
+    Tooltip = 'Enables Wardrobe ESP.',
+
+    Callback = function(Value)
+        if Value then
+            local function check(v)
+                if v:IsA('Model') then
+                    task.wait(0.1)
+                    if v.Name == 'Wardrobe' then
+                        local h = ESP(v.PrimaryPart, Options.WardrobeESPColor.Value, v.PrimaryPart, 'Closet')
+                        table.insert(ESPTable.lockers, h)
+                    elseif v.Name == 'Rooms_Locker' or v.Name == 'Rooms_Locker_Fridge' then
+                        local h = ESP(v.PrimaryPart, Options.WardrobeESPColor.Value, v.PrimaryPart, 'Locker')
+                        table.insert(ESPTable.lockers, h)
+                    end
+                end
+            end
+            
+            local function setup(room)
+                local assets = room:WaitForChild('Assets')
+                
+                if assets then
+                    local subaddconnect
+                    subaddconnect = assets.DescendantAdded:Connect(function(v)
+                        check(v)
+                    end)
+                    
+                    for _, v in pairs(assets:GetDescendants()) do
+                        check(v)
+                    end
+                    
+                    task.spawn(function()
+                        repeat task.wait() until not Toggles.WardrobeESPToggle.Value
+                        subaddconnect:Disconnect()
+                    end)
+                end
+            end
+            
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                setup(room)
+            end
+            
+            repeat task.wait() until not Toggles.WardrobeESPToggle.Value
+            addconnect:Disconnect()
+            
+            for _, v in pairs(ESPTable.lockers) do
+                v.delete()
+            end
+        end
+    end
+})
+Visuals_ESP:AddDivider()
+Visuals_ESP:AddToggle('DoorESPToggle', {
+    Text = 'Door',
+    Default = false,
+    Tooltip = 'Enables Door ESP.',
+
+    Callback = function(Value)
+        if Value then
+            local function setup(room)
+                local door = room:WaitForChild('Door'):WaitForChild('Door')
+                
+                task.wait(0.1)
+                local h = ESP(door, Options.DoorESPColor.Value, door, 'Door')
+                table.insert(ESPTable.doors, h)
+                
+                door:WaitForChild('Open').Played:Connect(function()
+                    h.delete()
+                end)
+                
+                door.AncestryChanged:Connect(function()
+                    h.delete()
+                end)
+            end
+            
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                if room:FindFirstChild('Assets') then
+                    setup(room)
+                end
+            end
+            
+            repeat task.wait() until not Toggles.DoorESPToggle.Value
+            addconnect:Disconnect()
+            
+            for _, v in pairs(ESPTable.doors) do
+                v.delete()
+            end
+        end
+    end
+})
+Visuals_ESP:AddToggle('KeyANDLeverESPToggle', {
+    Text = 'Key/Lever',
+    Default = false,
+    Tooltip = 'Enables Key and Lever ESP.',
+
+    Callback = function(Value)
+        if Value then
+            local function check(v)
+                if v:IsA('Model') and (v.Name == 'LeverForGate' or v.Name == 'KeyObtain') then
+                    task.wait(0.1)
+                    if v.Name == 'KeyObtain' then
+                        local hitbox = v:WaitForChild('Hitbox')
+                        
+                        local h = ESP(v, Options.KeyANDLeverESPColor.Value, hitbox, 'Key')
+                        table.insert(ESPTable.keys, h)
+                        
+                    elseif v.Name == 'LeverForGate' then
+                        local h = ESP(v, Options.KeyANDLeverESPColor.Value, v.PrimaryPart, 'Lever')
+                        table.insert(ESPTable.keys, h)
+                        
+                        v.PrimaryPart:WaitForChild('SoundToPlay').Played:Connect(function()
+                            h.delete()
+                        end)
+                    end
+                end
+            end
+            
+            local function setup(room)
+                local assets = room:WaitForChild('Assets')
+                
+                assets.DescendantAdded:Connect(function(v)
+                    check(v)
+                end)
+                    
+                for _, v in pairs(assets:GetDescendants()) do
+                    check(v)
+                end
+            end
+            
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                if room:FindFirstChild('Assets') then
+                    setup(room)
+                end
+            end
+            
+            repeat task.wait() until not Toggles.KeyANDLeverESPToggle.Value
+            addconnect:Disconnect()
+            
+            for _, v in pairs(ESPTable.keys) do
+                v.delete()
+            end
+        end
+    end
+})
+Visuals_ESP:AddToggle('ItemESPToggle', {
+    Text = 'Item',
+    Default = false,
+    Tooltip = 'Enables Item ESP.',
+
+    Callback = function(Value)
+        if Value then
+            local function check(v)
+                if v:IsA('Model') and (v:GetAttribute('Pickup') or v:GetAttribute('PropType')) then
+                    task.wait(0.1)
+                    
+                    local part = v:FindFirstChild('Handle') or v:FindFirstChild('Prop')
+                    local h = ESP(part, Options.ItemESPColor.Value, part, v.Name)
+                    table.insert(ESPTable.items, h)
+                end
+            end
+            
+            local function setup(room)
+                local assets = room:WaitForChild('Assets')
+                
+                if assets then
+                    local subaddconnect
+                    subaddconnect = assets.DescendantAdded:Connect(function(v)
+                        check(v)
+                    end)
+                    
+                    for _, v in pairs(assets:GetDescendants()) do
+                        check(v)
+                    end
+                    
+                    task.spawn(function()
+                        repeat task.wait() until not Toggles.ItemESPToggle.Value
+                        subaddconnect:Disconnect()
+                    end)
+                end
+            end
+            
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                if room:FindFirstChild('Assets') then
+                    setup(room)
+                end
+            end
+            
+            repeat task.wait() until not Toggles.ItemESPToggle.Value
+            addconnect:Disconnect()
+            
+            for _, v in pairs(ESPTable.items) do
+                v.delete()
+            end
+        end
+    end
+})
+Visuals_ESP:AddToggle('BookANDBreakerESPToggle', {
+    Text = 'Book/Breaker',
+    Default = false,
+    Tooltip = 'Enables Book and Breaker ESP.',
+
+    Callback = function(Value)
+        if Value then
+            local function check(v)
+                if v:IsA('Model') and v.Name == 'LiveHintBook' then
+                    task.wait(0.1)
+                    
+                    local h = ESP(v, Options.BookANDBreakerESPColor.Value, v.PrimaryPart, 'Book')
+                    table.insert(ESPTable.books, h)
+                    
+                    v.AncestryChanged:Connect(function()
+                        if not v:IsDescendantOf(v) then
+                            h.delete()
+                        end
+                    end)
+                elseif v:IsA('Model') and v.Name == 'LiveBreakerPolePickup' then
+                    task.wait(0.1)
+                    
+                    local h = ESP(v, Options.BookANDBreakerESPColor.Value, v.PrimaryPart, 'Breaker Switch')
+                    table.insert(ESPTable.books, h)
+                    
+                    v.AncestryChanged:Connect(function()
+                        if not v:IsDescendantOf(v) then
+                            h.delete()
+                        end
+                    end)
+                end
+            end
+            
+            local function setup(room)
+                if room.Name == '50' or room.Name == '100' then
+                    room.DescendantAdded:Connect(function(v)
+                        check(v)
+                    end)
+                    
+                    for _, v in pairs(room:GetDescendants()) do
+                        check(v)
+                    end
+                end
+            end
+            
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                setup(room)
+            end
+            
+            repeat task.wait() until not Toggles.BookANDBreakerESPToggle.Value
+            addconnect:Disconnect()
+            
+            for _, v in pairs(ESPTable.books) do
+                v.delete()
+            end
+        end
+    end
+})
+Visuals_ESP:AddToggle('ChestESPToggle', {
+    Text = 'Chest',
+    Default = false,
+    Tooltip = 'Enables Chest ESP.',
+
+    Callback = function(Value)
+        if Value then
+            local function check(v)
+                if v:IsA('Model') then
+                    task.wait(0.1)
+                    if v.Name == 'ChestBox' then
+                        warn(v.Name)
+                        local h = ESP(v, Options.ChestESPColor.Value, v.PrimaryPart, 'Chest')
+                        table.insert(ESPTable.chests, h)
+                    elseif v.Name == 'ChestBoxLocked' then
+                        local h = ESP(v, Options.ChestESPColor.Value, v.PrimaryPart, 'Locked Chest')
+                        table.insert(ESPTable.chests, h)
+                    end
+                end
+            end
+            
+            local function setup(room)
+                local subaddconnect
+                subaddconnect = room.DescendantAdded:Connect(function(v)
+                    check(v)
+                end)
+                
+                for _, v in pairs(room:GetDescendants()) do
+                    check(v)
+                end
+                
+                task.spawn(function()
+                    repeat task.wait() until not Toggles.ChestESPToggle.Value
+                    subaddconnect:Disconnect()
+                end)
+            end
+            
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                if room:FindFirstChild('Assets') then
+                    setup(room)
+                end
+            end
+            
+            repeat task.wait() until not Toggles.ChestESPToggle.Value
+            addconnect:Disconnect()
+            
+            for _, v in pairs(ESPTable.chests) do
+                v.delete()
+            end
+        end
+    end
+})
+Visuals_ESP:AddToggle('PlayersESPToggle', {
+    Text = 'Players',
+    Default = false,
+    Tooltip = 'Enables Players ESP.',
+
+    Callback = function(Value)
+        if Value then
+            local function personesp(v)
+                v.CharacterAdded:Connect(function(vc)
+                    local torso = vc:WaitForChild('UpperTorso')
+                    task.wait(0.1)
+                    
+                    local h = ESP(vc, Options.PlayersESPColor.Value, torso, v.DisplayName)
+                    table.insert(ESPTable.people, h)
+                end)
+                
+                if v.Character then
+                    local vc = v.Character
+                    local torso = vc:WaitForChild('UpperTorso')
+                    task.wait(0.1)
+                    
+                    local h = ESP(vc, Options.PlayersESPColor.Value, torso, v.DisplayName)
+                    table.insert(ESPTable.people, h)
+                end
+            end
+            
+            local addconnect
+            addconnect = game.Players.PlayerAdded:Connect(function(v)
+                if v ~= plr then
+                    personesp(v)
+                end
+            end)
+            
+            for _, v in pairs(game.Players:GetPlayers()) do
+                if v ~= plr then
+                    personesp(v)
+                end
+            end
+            
+            repeat task.wait() until not Toggles.PlayersESPToggle.Value
+            addconnect:Disconnect()
+            
+            for _, v in pairs(ESPTable.people) do
+                v.delete()
+            end
+        end
+    end
+})
+Visuals_ESP:AddToggle('GoldPileESPToggle', {
+    Text = 'Gold Pile',
+    Default = false,
+    Tooltip = 'Enables Gold Piles ESP.',
+
+    Callback = function(Value)
+        if Value then
+            local function check(v)
+                if v:IsA('Model') then
+                    task.wait(0.1)
+                    local goldvalue = v:GetAttribute('GoldValue')
+                    
+                    if goldvalue and goldvalue >= Options.MinimumESPGoldValueSlider.Value then
+                        local hitbox = v:WaitForChild('Hitbox')
+                        local h = ESP(hitbox:GetChildren(), Options.GoldPileESPColor.Value, hitbox, 'GoldPile ('..tostring(goldvalue)')')
+                        table.insert(ESPTable.gold, h)
+                    end
+                end
+            end
+            
+            local function setup(room)
+                local assets = room:WaitForChild('Assets')
+                
+                local subaddconnect
+                subaddconnect = assets.DescendantAdded:Connect(function(v)
+                    check(v)
+                end)
+                
+                for _, v in pairs(assets:GetDescendants()) do
+                    check(v)
+                end
+                
+                task.spawn(function()
+                    repeat task.wait() until not Toggles.GoldPileESPToggle.Value
+                    subaddconnect:Disconnect()
+                end)
+            end
+            
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                if room:FindFirstChild('Assets') then
+                    setup(room)
+                end
+            end
+
+            Options.MinimumESPGoldValueSlider:OnChanged(function()
+                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                    if room:FindFirstChild('Assets') then
+                        setup(room)
+                    end
+                end
+            end)
+            
+            repeat task.wait() until not Toggles.GoldPileESPToggle.Value
+            addconnect:Disconnect()
+            
+            for _, v in pairs(ESPTable.gold) do
+                v.delete()
+            end
+        end
+    end
+})
+Visuals_ESP:AddSlider('MinimumESPGoldValueSlider', {
+    Text = 'Minimum Gold Value',
+    Default = 5,
+    Min = 5,
+    Max = 150,
+    Rounding = 0,
+    Compact = false
+})
+
+local Visuals_ESPColor = Tabs['Visuals']:AddLeftGroupbox('ESP Color')
+Visuals_ESPColor:AddLabel('Entity ESP Color'):AddColorPicker('EntityESPColor', {
+    Default = Color3.fromRGB(255, 25, 25),
+    Title = 'Entity ESP Color',
+    Transparency = 0,
+
+    Callback = function(Value)
+        for _, esp in pairs(ESPTable.entity) do
+            esp.setColor(Value)
+        end
+    end
+})
+Visuals_ESPColor:AddLabel('Wardrobe ESP Color'):AddColorPicker('WardrobeESPColor', {
+    Default = Color3.fromRGB(145, 100, 25),
+    Title = 'Wardrobe ESP Color',
+    Transparency = 0,
+
+    Callback = function(Value)
+        for _, esp in pairs(ESPTable.lockers) do
+            esp.setColor(Value)
+        end
+    end
+})
+Visuals_ESPColor:AddLabel('Door ESP Color'):AddColorPicker('DoorESPColor', {
+    Default = Color3.fromRGB(255, 240, 0),
+    Title = 'Door ESP Color',
+    Transparency = 0,
+
+    Callback = function(Value)
+        for _, esp in pairs(ESPTable.doors) do
+            esp.setColor(Value)
+        end
+    end
+})
+Visuals_ESPColor:AddLabel('Key/Lever ESP Color'):AddColorPicker('KeyANDLeverESPColor', {
+    Default = Color3.fromRGB(0, 255, 115),
+    Title = 'Key/Lever ESP Color',
+    Transparency = 0,
+
+    Callback = function(Value)
+        for _, esp in pairs(ESPTable.keys) do
+            esp.setColor(Value)
+        end
+    end
+})
+Visuals_ESPColor:AddLabel('Item ESP Color'):AddColorPicker('ItemESPColor', {
+    Default = Color3.fromRGB(160, 190, 255),
+    Title = 'Item ESP Color',
+    Transparency = 0,
+
+    Callback = function(Value)
+        for _, esp in pairs(ESPTable.items) do
+            esp.setColor(Value)
+        end
+    end
+})
+Visuals_ESPColor:AddLabel('Book/Breaker Color'):AddColorPicker('BookANDBreakerESPColor', {
+    Default = Color3.fromRGB(160, 190, 255),
+    Title = 'Book/Breaker Color',
+    Transparency = 0,
+
+    Callback = function(Value)
+        for _, esp in pairs(ESPTable.books) do
+            esp.setColor(Value)
+        end
+    end
+})
+Visuals_ESPColor:AddLabel('Chest ESP Color'):AddColorPicker('ChestESPColor', {
+    Default = Color3.fromRGB(205, 120, 255),
+    Title = 'Chest ESP Color',
+    Transparency = 0,
+
+    Callback = function(Value)
+        for _, esp in pairs(ESPTable.chests) do
+            esp.setColor(Value)
+        end
+    end
+})
+Visuals_ESPColor:AddLabel('Players ESP Color'):AddColorPicker('PlayersESPColor', {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = 'Players ESP Color',
+    Transparency = 0,
+
+    Callback = function(Value)
+        for _, esp in pairs(ESPTable.people) do
+            esp.setColor(Value)
+        end
+    end
+})
+Visuals_ESPColor:AddLabel('Gold Pile ESP Color'):AddColorPicker('GoldPileESPColor', {
+    Default = Color3.fromRGB(255, 255, 0),
+    Title = 'Gold Pile ESP Color',
+    Transparency = 0,
+
+    Callback = function(Value)
+        for _, esp in pairs(ESPTable.gold) do
+            esp.setColor(Value)
+        end
+    end
+})
+
+local Visuals_View = Tabs['Visuals']:AddRightGroupbox('View')
+local oldAmbient = game.Lighting.Ambient
+Visuals_View:AddToggle('AmbienceToggle', {
+    Text = 'Ambience',
+    Default = false,
+    Tooltip = 'Changes Ambient Color.',
+
+    Callback = function(Value)
+        if Value then
+            game.Lighting.Ambient = Options.AmbienceColor.Value
+
+            Options.AmbienceColor:OnChanged(function()
+                if Toggles.AmbienceToggle.Value then
+                    game.Lighting.Ambient = Options.AmbienceColor.Value
+                end
+            end)
+            
+            local addconnect
+            addconnect = RunService.RenderStepped:Connect(function()
+                game.Lighting.Ambient = Options.AmbienceColor.Value
+            end)
+
+            local subaddconnect
+            subaddconnect = game.Lighting:GetPropertyChangedSignal("Ambient"):Connect(function()
+                game.Lighting.Ambient = Options.AmbienceColor.Value
+            end)
+
+            repeat task.wait() until not Toggles.AmbienceToggle.Value
+            addconnect:Disconnect()
+            subaddconnect:Disconnect()
+            game.Lighting.Ambient = oldAmbient
+        end
+    end
+}):AddColorPicker('AmbienceColor', {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = '',
+    Transparency = 0
+})
+Visuals_View:AddSlider('FieldOfViewSlider', {
+    Text = 'Field Of View',
+    Default = 70,
+    Min = 0,
+    Max = 120,
+    Rounding = 0,
+    Compact = false
+})
+local FieldOfViewAddConnect
+FieldOfViewAddConnect = RunService.RenderStepped:Connect(function()
+    workspace.CurrentCamera.FieldOfView = Options.FieldOfViewSlider.Value
+end)
+Library:OnUnload(function()
+    FieldOfViewAddConnect:Disconnect()
+end)
+
+-- Movement Tab
+local Movement_General = Tabs['Movement']:AddLeftGroupbox('General')
+local oldCustomPhysicalProperties = game.Players.LocalPlayer.Character.HumanoidRootPart.CustomPhysicalProperties
+Movement_General:AddToggle('NoAccelerationToggle', {
+    Text = 'No Acceleration',
+    Default = false,
+    Tooltip = 'No Acceleration.',
+
+    Callback = function(Value)
+        if Value then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CustomPhysicalProperties = PhysicalProperties.new(100, 0, 0, 0, 0)
+        else
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CustomPhysicalProperties = oldCustomPhysicalProperties
+        end
+    end
+})
+Movement_General:AddToggle('NoclipToggle', {
+    Text = 'Noclip',
+    Default = false,
+    Tooltip = 'Go through walls!',
+
+    Callback = function(Value)
+        local Keybind = Options.NoclipKeybind.Value
+        local IncludeNoclip = true
+
+        local isEnabled = Value
+
+        local UIS = game:GetService('UserInputService')
+
+        local addconnect
+        addconnect = UIS.InputBegan:Connect(function(input, gp)
+            if gp then return end
+
+            if input.KeyCode == Enum.KeyCode[Keybind] then
+                isEnabled = not isEnabled
+            end
+        end)
+
+        local subaddconnect
+        subaddconnect = RunService.RenderStepped:Connect(function()
+            if not char:FindFirstChild('HumanoidRootPart') then return end
+            if IncludeNoclip then
+                char.HumanoidRootPart.CanCollide = not isEnabled
+                char.Collision.CanCollide = not isEnabled
+            end
+
+            local HrpCFrame = char.HumanoidRootPart.CFrame
+
+            local ray = Ray.new(HrpCFrame.Position, HrpCFrame.LookVector * 0.5)
+            local part = workspace:FindPartOnRay(ray)
+            if part and part.CanCollide == true and isEnabled then
+                char.HumanoidRootPart.Anchored = true
+                char:PivotTo(char.HumanoidRootPart.CFrame * CFrame.new(0, 1000, 0))
+                task.wait()
+                char:PivotTo(char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -4))
+                task.wait()
+                char:PivotTo(char.HumanoidRootPart.CFrame * CFrame.new(0, -1000, 0))
+                task.wait(0.1)
+                char.HumanoidRootPart.Anchored = false
+            end
+        end)
+
+        repeat task.wait() until not Toggles.NoclipToggle.Value
+        addconnect:Disconnect()
+        subaddconnect:Disconnect()
+    end
+}):AddKeyPicker('NoclipKeybind', {
+    Default = 'N',
+    SyncToggleState = true,
+
+    Mode = 'Toggle',
+
+    Text = 'Noclip',
+    NoUI = false
+})
+local NoclipAndGodmodeButton = Movement_General:AddButton({
+    Text = 'Noclip/Godmode (READ THE TOOLTIP)',
+    Func = function()
+        local Collision = game.Players.LocalPlayer.Character:FindFirstChild("Collision")
+        Collision.Position = Collision.Position - Vector3.new(0, 10, 0)
+    end,
+    DoubleClick = false,
+    Tooltip = '(Unrevertable) (The Noclip toggle and Godmode toggle are recommended)'
+})
+Movement_General:AddSlider('SpeedBoostSlider', {
+    Text = 'Speed Boost',
+    Default = 0,
+    Min = 0,
+    Max = 25,
+    Rounding = 0,
+    Compact = false,
+
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid:SetAttribute('SpeedBoost', Value)
+    end
+})
+
+
+Library.KeybindFrame.Visible = true
+
+Library:OnUnload(function()
+    if game.CoreGui:FindFirstChild('ESP_Folder') then
+        game.CoreGui.ESP_Folder:Destroy()
+    end
+    Toggles.NoclipToggle:SetValue(false)
+
+    Library.Unloaded = true
+end)
+
+local Config_Menu = Tabs['Config']:AddLeftGroupbox('Menu')
+Config_Menu:AddButton('Unload', function()
+	Library:Unload()
+end)
+Config_Menu:AddLabel('Menu Keybind'):AddKeyPicker('MenuKeybind', {
+    Default = 'T',
+    
+    NoUI = true,
+    Text = 'Menu Keybind',
+})
+Library.ToggleKeybind = Options.MenuKeybind
+Config_Menu:AddDivider()
+Config_Menu:AddToggle('ShowKeybindsToggle', {
+    Text = 'Show Keybinds menu',
+    Default = true,
+    Tooltip = 'Show the Keybinds UI.',
+
+    Callback = function(Value)
+        Library.KeybindFrame.Visible = Value
+    end
+})
+
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+
+SaveManager:IgnoreThemeSettings()
+
+SaveManager:SetIgnoreIndexes({ 'ShowKeybindsKeybind' })
+
+ThemeManager:SetFolder('Lilhub')
+SaveManager:SetFolder('lilbub/doors')
+
+SaveManager:BuildConfigSection(Tabs['Config'])
+
+ThemeManager:ApplyToTab(Tabs['Config'])
+
+SaveManager:LoadAutoloadConfig()
